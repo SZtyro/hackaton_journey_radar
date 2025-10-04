@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:journey_radar_mobile/config/constants.dart';
 import 'package:journey_radar_mobile/storage/storage.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserStorage {

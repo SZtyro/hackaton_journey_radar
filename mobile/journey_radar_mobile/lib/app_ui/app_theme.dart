@@ -9,7 +9,7 @@ ThemeData appTheme({bool isDarkTheme = true}) => ThemeData.from(
       colorScheme: isDarkTheme ? darkColorScheme : lightColorScheme,
     ).copyWith(
       popupMenuTheme: PopupMenuThemeData(
-        elevation: 10,
+        elevation: AppSpacing.xs * 2.5,
         menuPadding: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
@@ -165,8 +165,8 @@ class SystemUiOverlayTheme {
         border: Border.all(
           color: Colors.white.withOpacity(0.1),
         ),
-        borderRadius: const BorderRadius.all(
-          Radius.circular(8),
+        borderRadius: BorderRadius.all(
+          Radius.circular(AppSpacing.xs),
         ),
       );
 }

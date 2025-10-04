@@ -13,14 +13,13 @@ import 'package:journey_radar_mobile/config/language_provider.dart';
 import 'package:journey_radar_mobile/storage/persistent_storage.dart';
 import 'package:journey_radar_mobile/storage/storage.dart';
 import 'package:journey_radar_mobile/storage/user_storage.dart';
+import 'package:journey_radar_mobile/theme/theme_cubit.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 final getIt = GetIt.instance;
 
 Future<void> setUpServiceLocator() async {
-
   /// Configure FlutterSecureStorage with Android-specific options to prevent data loss on updates
   const flutterSecureStorage = FlutterSecureStorage(
     aOptions: AndroidOptions(
@@ -97,11 +96,7 @@ Future<void> setUpServiceLocator() async {
     ),
   );
 
-  final flutterTts = FlutterTts();
-  await flutterTts.setIosAudioCategory(IosTextToSpeechAudioCategory.playback, [
-    IosTextToSpeechAudioCategoryOptions.defaultToSpeaker,
-  ]);
-  await flutterTts.setVolume(1);
-  await flutterTts.awaitSpeakCompletion(true);
-  getIt.registerSingleton<FlutterTts>(flutterTts);
+  // Register ThemeCubit
+  final themeCubit = ThemeCubit();
+  getIt.registerSingleton<ThemeCubit>(themeCubit);
 }

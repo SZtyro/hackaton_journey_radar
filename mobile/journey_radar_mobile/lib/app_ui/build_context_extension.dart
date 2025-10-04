@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:journey_radar_mobile/app_ui/app_colors.dart';
+import 'package:journey_radar_mobile/app_ui/app_spacing.dart';
 import 'package:journey_radar_mobile/app_ui/font_constants.dart';
 import 'package:journey_radar_mobile/app_ui/text_style_extension.dart';
 
@@ -15,22 +15,28 @@ extension BuildContextX on BuildContext {
   /// Whether current theme [Brightness] is dark.
   bool get isDark => !isLight;
 
+  /// Defines current theme [ColorScheme].
+  ColorScheme get colorScheme => theme.colorScheme;
+
   /// Defines an adaptive [Color], depending on current theme brightness.
-  Color get adaptiveColor => isDark ? AppColors.white : AppColors.black;
+  Color get adaptiveColor =>
+      isDark ? colorScheme.onSurface : colorScheme.onSurface;
 
   /// Defines a reversed adaptive [Color], depending on current theme
   /// brightness.
-  Color get reversedAdaptiveColor => isDark ? AppColors.black : AppColors.white;
+  Color get reversedAdaptiveColor =>
+      isDark ? colorScheme.surface : colorScheme.surface;
 
   /// Defines a customizable adaptive [Color]. If [light] or [dark] is not
   /// provided default colors are used.
-  Color customAdaptiveColor({Color? light, Color? dark}) =>
-      isDark ? (light ?? AppColors.white) : (dark ?? AppColors.black);
+  Color customAdaptiveColor({Color? light, Color? dark}) => isDark
+      ? (light ?? colorScheme.onSurface)
+      : (dark ?? colorScheme.onSurface);
 
   /// Defines a customizable reversed adaptive [Color]. If [light] or [dark]
   /// is not provided default reversed colors are used.
   Color customReversedAdaptiveColor({Color? light, Color? dark}) =>
-      isDark ? (dark ?? AppColors.black) : (light ?? AppColors.white);
+      isDark ? (dark ?? colorScheme.surface) : (light ?? colorScheme.surface);
 
   /// Defines [MediaQueryData] based on provided context.
   Size get size => MediaQuery.sizeOf(this);
@@ -63,7 +69,7 @@ extension BuildContextX on BuildContext {
   void showSnackBar(
     String text, {
     bool dismissible = true,
-    Color color = AppColors.white,
+    Color? color,
     Duration duration = const Duration(seconds: 4),
     SnackBarBehavior? behavior,
     SnackBarAction? snackBarAction,
@@ -78,15 +84,19 @@ extension BuildContextX on BuildContext {
               text,
               style: TextStyle(
                 fontSize: FontConstants.fontSizeS,
-                color: Colors.black,
+                color: color != null
+                    ? (color.computeLuminance() > 0.5
+                        ? Colors.black
+                        : Colors.white)
+                    : null,
               ),
             ),
             action: snackBarAction,
             behavior: behavior,
-            backgroundColor: color,
+            backgroundColor: color ?? colorScheme.surface,
             dismissDirection: dismissDirection,
             duration: duration,
-            elevation: 100,
+            elevation: AppSpacing.xxxxxl * 1.25,
           ),
         );
 
