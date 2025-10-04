@@ -8,9 +8,9 @@ spring:
     datasource:
         driver-class-name: org.postgresql.Driver
         password: ${DATABASE_PASSWORD}
-        platform: postgres
         url: jdbc:${DATABASE_URL}
         username: ${DATABASE_USER}
+
     jackson:
         deserialization:
             use_java_array_for_json_array: true
