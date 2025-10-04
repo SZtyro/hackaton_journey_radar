@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:journey_radar_mobile/app_ui/components/components.dart';
+import 'package:journey_radar_mobile/config/firebase_push_notifications_service.dart';
+import 'package:journey_radar_mobile/config/language_provider.dart';
+import 'package:journey_radar_mobile/config/logger.dart';
+import 'package:journey_radar_mobile/config/service_locator.dart';
 import 'package:journey_radar_mobile/features/home_page.dart';
 import 'package:journey_radar_mobile/features/map_page.dart';
 import 'package:journey_radar_mobile/features/schedule_page.dart';
@@ -14,6 +18,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
+  final firebaseApi = getIt<FirebasePushNotificationService>();
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -48,6 +53,35 @@ class _MainPageState extends State<MainPage> {
       tooltip: 'Ustawienia aplikacji',
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeNotifications();
+  }
+
+  Future<void> _initializeNotifications() async {
+    try {
+      // Get the current language
+      final languageProvider = getIt<LanguageProvider>();
+      final currentLanguage = languageProvider.currentLocale.languageCode;
+
+      // Initialize notifications
+      await firebaseApi.initNotifications(
+        context: context,
+        languageCode: currentLanguage,
+      );
+
+      // Get and log the FCM token
+      final fcmToken = await firebaseApi.getFCMToken();
+      logD('FCM Token: $fcmToken');
+
+      // Log that initialization is complete
+      logD('Firebase push notifications initialized successfully');
+    } catch (e) {
+      logD('Error initializing notifications: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
