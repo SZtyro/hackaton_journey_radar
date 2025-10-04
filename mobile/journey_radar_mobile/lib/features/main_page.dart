@@ -6,7 +6,6 @@ import 'package:journey_radar_mobile/config/logger.dart';
 import 'package:journey_radar_mobile/config/service_locator.dart';
 import 'package:journey_radar_mobile/features/home_page.dart';
 import 'package:journey_radar_mobile/features/incident_reporting_page.dart';
-import 'package:journey_radar_mobile/features/map_page.dart';
 import 'package:journey_radar_mobile/features/map/map.dart';
 import 'package:journey_radar_mobile/features/schedule_page.dart';
 import 'package:journey_radar_mobile/features/settings_page.dart';
