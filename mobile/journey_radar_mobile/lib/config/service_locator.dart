@@ -8,10 +8,13 @@ import 'package:dio/io.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get_it/get_it.dart';
+import 'package:journey_radar_mobile/api/api.dart';
 import 'package:journey_radar_mobile/config/constants.dart';
 import 'package:journey_radar_mobile/config/error_interceptor.dart';
 import 'package:journey_radar_mobile/config/firebase_push_notifications_service.dart';
 import 'package:journey_radar_mobile/config/language_provider.dart';
+import 'package:journey_radar_mobile/repository/repository.dart';
+import 'package:journey_radar_mobile/repository/repository_impl.dart';
 import 'package:journey_radar_mobile/storage/persistent_storage.dart';
 import 'package:journey_radar_mobile/storage/storage.dart';
 import 'package:journey_radar_mobile/storage/user_storage.dart';
@@ -20,6 +23,10 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final getIt = GetIt.instance;
+
+/// Flag to determine whether to use mock API or real API
+/// Set to true for development, false for production
+const bool useMockApi = true; // Change to false when ready for real API
 
 Future<void> setUpServiceLocator() async {
   /// Configure FlutterSecureStorage with Android-specific options to prevent data loss on updates
@@ -110,5 +117,25 @@ Future<void> setUpServiceLocator() async {
   getIt.registerSingleton<FlutterTts>(flutterTts);
   getIt.registerLazySingleton<FirebasePushNotificationService>(
     FirebasePushNotificationService.new,
+  );
+  // getIt.registerLazySingleton<FirebasePushNotificationService>(
+  //   FirebasePushNotificationService.new,
+  // );
+
+  getIt.registerLazySingleton<Api>(
+    () => Api(
+      dio: getIt<Dio>(),
+      baseUrl:
+          'https://api.journey-radar.com', // Replace with your API base URL
+    ),
+  );
+
+  // Register Repository with mock/real API flag
+  getIt.registerLazySingleton<Repository>(
+    () => RepositoryImpl(
+      useMockApi: useMockApi,
+      dio: userDio,
+      baseUrl: AppConstants.baseUrl,
+    ),
   );
 }
