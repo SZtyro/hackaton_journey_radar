@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
+// import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:journey_radar_mobile/config/constants.dart';
 import 'package:journey_radar_mobile/config/logger.dart';
 
@@ -37,8 +37,8 @@ Future<void> bootstrap(
   };
 
   await runZonedGuarded(() async {
-    final binding = WidgetsFlutterBinding.ensureInitialized();
-    FlutterNativeSplash.preserve(widgetsBinding: binding);
+    WidgetsFlutterBinding.ensureInitialized();
+    // FlutterNativeSplash.preserve(widgetsBinding: binding);
     await EasyLocalization.ensureInitialized();
     Bloc.observer = const AppBlocObserver();
 

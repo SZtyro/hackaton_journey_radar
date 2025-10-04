@@ -2,7 +2,6 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:journey_radar_mobile/app_ui/app_theme.dart';
 import 'package:sizer/sizer.dart';
 
@@ -21,24 +20,18 @@ class AppView extends StatelessWidget {
     //   userManagementRepository: getIt<UserManagementRepository>(),
     // );
 
-    final router = AppRouter(
-    ).router();
-    return MultiBlocProvider(
-      providers: [
-      ],
-      child: Sizer(
-        builder: (context, orientation, deviceType) {
-          return MaterialApp.router(
-            // debugShowCheckedModeBanner: false,
-            themeMode: ThemeMode.dark,
-            theme: appTheme(isDarkTheme: false),
-            darkTheme: appTheme(),
-            localizationsDelegates: context.localizationDelegates,
-            supportedLocales: context.supportedLocales,
-            routerConfig: router,
-          );
-        },
-      ),
+    final router = AppRouter().router();
+    return Sizer(
+      builder: (context, orientation, deviceType) {
+        return MaterialApp.router(
+          themeMode: ThemeMode.dark,
+          theme: appTheme(isDarkTheme: false),
+          darkTheme: appTheme(),
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          routerConfig: router,
+        );
+      },
     );
   }
 }

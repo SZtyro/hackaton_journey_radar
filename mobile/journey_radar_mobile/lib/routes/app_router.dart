@@ -1,6 +1,5 @@
 // ignore_for_file: lines_longer_than_80_chars
 
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
 import 'package:journey_radar_mobile/features/auth_page.dart';
 import 'package:journey_radar_mobile/features/home_page.dart';
@@ -13,25 +12,9 @@ class AppRouter {
 
   AppRouter();
 
-  bool _splashGone = false;
-
-  void _removeSplashOnce() {
-    if (!_splashGone) {
-      FlutterNativeSplash.remove();
-      _splashGone = true;
-    }
-  }
-
   GoRouter router() => GoRouter(
         debugLogDiagnostics: true,
         initialLocation: AppRoutes.auth.route,
-
-        redirect: (context, state) async {
-
-          // No redirect necessary
-          _removeSplashOnce();
-          return null;
-        },
         routes: [
           GoRoute(
             path: AppRoutes.home.route,

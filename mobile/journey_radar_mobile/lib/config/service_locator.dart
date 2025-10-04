@@ -104,4 +104,7 @@ Future<void> setUpServiceLocator() async {
   await flutterTts.setVolume(1);
   await flutterTts.awaitSpeakCompletion(true);
   getIt.registerSingleton<FlutterTts>(flutterTts);
+  getIt.registerLazySingleton<FirebasePushNotificationService>(
+    FirebasePushNotificationService.new,
+  );
 }
