@@ -1,0 +1,7 @@
+{
+  "hello": "Hello",
+  "noInternet": "No internet connection",
+  "unexpectedError": "Unexpected error",
+  "failedConnectionWithServer": "Failed to connect with server",
+  "serverError": "Server error"
+}
