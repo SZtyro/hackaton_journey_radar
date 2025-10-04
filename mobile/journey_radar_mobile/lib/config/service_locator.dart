@@ -6,6 +6,7 @@ import 'package:curl_logger_dio_interceptor/curl_logger_dio_interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get_it/get_it.dart';
 import 'package:journey_radar_mobile/config/constants.dart';
 import 'package:journey_radar_mobile/config/error_interceptor.dart';
@@ -106,7 +107,7 @@ Future<void> setUpServiceLocator() async {
   await flutterTts.setVolume(1);
   await flutterTts.awaitSpeakCompletion(true);
   getIt.registerSingleton<FlutterTts>(flutterTts);
-  getIt.registerLazySingleton<FirebasePushNotificationService>(
-    FirebasePushNotificationService.new,
-  );
+  // getIt.registerLazySingleton<FirebasePushNotificationService>(
+  //   FirebasePushNotificationService.new,
+  // );
 }
