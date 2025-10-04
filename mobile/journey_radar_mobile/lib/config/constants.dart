@@ -14,16 +14,17 @@ abstract class StorageKeys {
   static const userName = 'user_name';
   static const userLanguage = 'user_language';
   static const hasAskedPush = 'has_asked_push';
-  static const firstLaunchKey = 'first_launch';
+  static const firstLaunchKey = 'is_first_launch';
 }
 
 abstract class AppConstants {
   static const Color defaultSeed = Color(0xFF6750A4);
-  static const String baseUrl = 'https://api.example.com';
+  static const baseUrl = 'https://api.journeyradar.com';
 }
 
+
 abstract class DioNetworkConstants {
-  static const Duration connectTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 30);
-  static const Duration sendTimeout = Duration(seconds: 30);
+  static const connectTimeout = Duration(seconds: 45);
+  static const receiveTimeout = Duration(seconds: 300);
+  static const sendTimeout = Duration(seconds: 45);
 }

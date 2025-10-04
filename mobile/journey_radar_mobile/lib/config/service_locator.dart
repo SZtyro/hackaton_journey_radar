@@ -99,4 +99,14 @@ Future<void> setUpServiceLocator() async {
   // Register ThemeCubit
   final themeCubit = ThemeCubit();
   getIt.registerSingleton<ThemeCubit>(themeCubit);
+  final flutterTts = FlutterTts();
+  await flutterTts.setIosAudioCategory(IosTextToSpeechAudioCategory.playback, [
+    IosTextToSpeechAudioCategoryOptions.defaultToSpeaker,
+  ]);
+  await flutterTts.setVolume(1);
+  await flutterTts.awaitSpeakCompletion(true);
+  getIt.registerSingleton<FlutterTts>(flutterTts);
+  getIt.registerLazySingleton<FirebasePushNotificationService>(
+    FirebasePushNotificationService.new,
+  );
 }
