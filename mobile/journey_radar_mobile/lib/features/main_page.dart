@@ -5,6 +5,7 @@ import 'package:journey_radar_mobile/config/language_provider.dart';
 import 'package:journey_radar_mobile/config/logger.dart';
 import 'package:journey_radar_mobile/config/service_locator.dart';
 import 'package:journey_radar_mobile/features/home_page.dart';
+import 'package:journey_radar_mobile/features/incident_reporting_page.dart';
 import 'package:journey_radar_mobile/features/map_page.dart';
 import 'package:journey_radar_mobile/features/schedule_page.dart';
 import 'package:journey_radar_mobile/features/settings_page.dart';
@@ -24,6 +25,7 @@ class _MainPageState extends State<MainPage> {
     const HomePage(),
     const MapPage(),
     const SchedulePage(),
+    const IncidentReportingPage(),
     const SettingsPage(),
   ];
 
@@ -45,6 +47,12 @@ class _MainPageState extends State<MainPage> {
       activeIcon: const Icon(Icons.schedule),
       label: 'Rozkład',
       tooltip: 'Rozkład jazdy',
+    ),
+    AppBottomNavigationItem(
+      icon: const Icon(Icons.report_problem_outlined),
+      activeIcon: const Icon(Icons.report_problem),
+      label: 'Zgłoś incydent',
+      tooltip: 'Zgłoś incydent na trasie',
     ),
     AppBottomNavigationItem(
       icon: const Icon(Icons.settings_outlined),

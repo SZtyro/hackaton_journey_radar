@@ -169,6 +169,99 @@ class FirebasePushNotificationService {
     logD('Subscribed to topic: $languageCode');
   }
 
+  /// Subscribes to a specific route topic for incident notifications
+  Future<void> subscribeToRouteTopic({
+    required String routeId,
+  }) async {
+    final topicName = 'route_$routeId';
+    await _firebaseMessaging.subscribeToTopic(topicName);
+    logD('Subscribed to route topic: $topicName');
+  }
+
+  /// Unsubscribes from a specific route topic
+  Future<void> unsubscribeFromRouteTopic({
+    required String routeId,
+  }) async {
+    final topicName = 'route_$routeId';
+    await _firebaseMessaging.unsubscribeFromTopic(topicName);
+    logD('Unsubscribed from route topic: $topicName');
+  }
+
+  /// Sends an incident notification to users on a specific route
+  /// This is a mock implementation - in a real app, this would call your backend API
+  Future<void> sendIncidentNotification({
+    required String routeId,
+    required String incidentType,
+    required String incidentDescription,
+    required String location,
+    required bool isEmergency,
+    String? station,
+    Map<String, double>? gpsCoordinates,
+  }) async {
+    try {
+      // Mock notification data - in a real implementation, this would be sent via your backend
+      final notificationData = {
+        'title': isEmergency ? '🚨 PILNY INCYDENT' : '⚠️ Nowy incydent',
+        'body': '$incidentType - $location',
+        'data': {
+          'type': 'incident',
+          'incidentType': incidentType,
+          'routeId': routeId,
+          'location': location,
+          'station': station ?? '',
+          'isEmergency': isEmergency.toString(),
+          'timestamp': DateTime.now().toIso8601String(),
+          'description': incidentDescription,
+          'gpsCoordinates': gpsCoordinates != null
+              ? {
+                  'latitude': gpsCoordinates['latitude'],
+                  'longitude': gpsCoordinates['longitude'],
+                }
+              : null,
+        },
+      };
+
+      logD('Sending incident notification: $notificationData');
+
+      // In a real implementation, you would:
+      // 1. Call your backend API to send the notification
+      // 2. The backend would use Firebase Admin SDK to send to the route topic
+      // 3. Users subscribed to that route topic would receive the notification
+
+      // For now, we'll simulate this by showing a local notification
+      await _showLocalIncidentNotification(notificationData);
+    } catch (e) {
+      logD('Error sending incident notification: $e');
+      rethrow;
+    }
+  }
+
+  /// Shows a local notification for incident reporting (for testing purposes)
+  Future<void> _showLocalIncidentNotification(
+      Map<String, dynamic> notificationData) async {
+    const androidDetails = AndroidNotificationDetails(
+      'incident_channel',
+      'Incident Notifications',
+      channelDescription: 'Notifications about incidents on routes',
+      importance: Importance.max,
+      priority: Priority.high,
+      fullScreenIntent: true,
+      color: Colors.red,
+    );
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _localNotificationsPlugin.show(
+      DateTime.now().millisecondsSinceEpoch.remainder(100000),
+      notificationData['title'],
+      notificationData['body'],
+      notificationDetails,
+      payload: notificationData['data'].toString(),
+    );
+  }
+
   /// Displays a local notification when an FCM message arrives
   /// and optionally performs TTS.
   Future<void> _showNotification({
