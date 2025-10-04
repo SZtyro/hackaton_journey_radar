@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:journey_radar_mobile/config/constants.dart';
@@ -29,9 +29,9 @@ class AppBlocObserver extends BlocObserver {
 }
 
 Future<void> bootstrap(
-  AppBuilder builder, {
+  AppBuilder builder, /* {
   required FirebaseOptions options,
-}) async {
+} */) async {
   FlutterError.onError = (details) {
     logE(details.exceptionAsString(), stackTrace: details.stack);
   };
@@ -43,7 +43,7 @@ Future<void> bootstrap(
     Bloc.observer = const AppBlocObserver();
 
     // Add cross-flavor configuration here
-    await Firebase.initializeApp(options: options);
+    // await Firebase.initializeApp(options: options);
 
     // await setUpServiceLocator();
     runApp(
