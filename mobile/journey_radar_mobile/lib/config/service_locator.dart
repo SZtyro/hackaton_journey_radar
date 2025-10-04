@@ -9,6 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:journey_radar_mobile/config/constants.dart';
 import 'package:journey_radar_mobile/config/error_interceptor.dart';
+import 'package:journey_radar_mobile/config/firebase_push_notifications_service.dart';
 import 'package:journey_radar_mobile/config/language_provider.dart';
 import 'package:journey_radar_mobile/storage/persistent_storage.dart';
 import 'package:journey_radar_mobile/storage/storage.dart';

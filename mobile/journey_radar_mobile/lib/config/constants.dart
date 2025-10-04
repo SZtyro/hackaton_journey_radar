@@ -14,6 +14,13 @@ abstract class StorageKeys {
 
 abstract class AppConstants {
   static const baseUrl = 'https://api.journeyradar.com';
+  static const androidPushNotificationsChannelId =
+      'journey_radar_mobile_channel_id';
+  static const androidPushNotificationsChannelName =
+      'Journey Radar Mobile Channel';
+  static const androidPushNotificationsChannelDescription =
+      'Journey Radar Mobile Channel Description';
+  static const nativeAndroidDefaultIconPath = '@mipmap/ic_launcher';
 }
 
 abstract class DioNetworkConstants {
