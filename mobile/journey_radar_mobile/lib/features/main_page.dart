@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:journey_radar_mobile/app_ui/components/components.dart';
 import 'package:journey_radar_mobile/features/home_page.dart';
-import 'package:journey_radar_mobile/features/map_page.dart';
+import 'package:journey_radar_mobile/features/map/map.dart';
 import 'package:journey_radar_mobile/features/schedule_page.dart';
 import 'package:journey_radar_mobile/features/settings_page.dart';
 
@@ -17,7 +17,7 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    const MapPage(),
+    const MapPageWithApi(),
     const SchedulePage(),
     const SettingsPage(),
   ];
