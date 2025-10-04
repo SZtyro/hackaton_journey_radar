@@ -16,16 +16,16 @@ spring:
             use_java_array_for_json_array: true
         serialization:
             write-dates-as-timestamps: false
-    jpa:
-        database: POSTGRESQL
-        generate-ddl: true
-        properties:
-            hibernate:
-                hbm2ddl:
-                    auto: update
-                    create_namespaces: true
-                show_sql: true
-                format_sql: true
+#    jpa:
+#        database: POSTGRESQL
+#        generate-ddl: true
+#        properties:
+#            hibernate:
+#                hbm2ddl:
+#                    auto: update
+#                    create_namespaces: true
+#                show_sql: true
+#                format_sql: true
     mvc:
         pathmatch:
             matching-strategy: ANT_PATH_MATCHER
