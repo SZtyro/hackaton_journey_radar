@@ -113,45 +113,7 @@
                     <packagingExcludes>frontend/**</packagingExcludes>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.11.3</version>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <id>install node and npm</id>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <phase>install</phase>
-                        <id>npm install</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm run-script build</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <phase>install</phase>
-                        <configuration>
-                            <arguments>run build</arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <nodeVersion>v18.19.1</nodeVersion>
-                    <npmVersion>10.2.4</npmVersion>
-                    <workingDirectory>${project.basedir}/src/main/frontend</workingDirectory>
-                </configuration>
-            </plugin>
+
         </plugins>
     </build>
 </project>
