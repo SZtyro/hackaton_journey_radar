@@ -236,7 +236,8 @@ class _MapPageViewState extends State<_MapPageView> {
         ),
         content: BlocConsumer<MapCubit, MapState>(
           listenWhen: (previous, current) =>
-          previous.exception != current.exception && current.exception != null,
+              previous.exception != current.exception &&
+              current.exception != null,
           listener: (context, state) {
             _showErrorDialog(context, state.exception.toString());
             context.read<MapCubit>().clearError();
