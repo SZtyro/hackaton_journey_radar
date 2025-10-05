@@ -356,7 +356,8 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   void _moveMapToCurrentLocation() {
     if (_currentLocation != null && mounted) {
       try {
-        _mapController.move(_currentLocation!, 15.0);
+        // Przybliż mapę bardziej do lokalizacji użytkownika
+        _mapController.move(_currentLocation!, 18.0); // Zwiększony zoom level
       } catch (e) {
         logE('Error moving map: $e');
       }
@@ -674,9 +675,12 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
                               child: FlutterMap(
                                 mapController: _mapController,
                                 options: MapOptions(
-                                  initialCenter: const LatLng(
-                                      50.0647, 19.9450), // Krakow center
-                                  initialZoom: 15.0,
+                                  initialCenter: _currentLocation ??
+                                      const LatLng(50.0647,
+                                          19.9450), // Twoja lokalizacja lub Kraków jako fallback
+                                  initialZoom: _currentLocation != null
+                                      ? 18.0
+                                      : 15.0, // Wyższy zoom jeśli masz GPS
                                   minZoom: 10.0,
                                   maxZoom: 18.0,
                                   interactionOptions: const InteractionOptions(
