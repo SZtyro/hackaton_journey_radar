@@ -48,7 +48,7 @@ class _MapPageViewState extends State<_MapPageView> {
       return AppMarkerHelper.busStop(
         point: stop.position!,
         onTap: () => _showGtfsStopInfo(stop),
-        size: MarkerSize.small,
+        size: MarkerSize.extraSmall,
       );
     }).toList();
   }
@@ -61,7 +61,7 @@ class _MapPageViewState extends State<_MapPageView> {
       return AppMarkerHelper.busStop(
         point: vehicle.position!,
         onTap: () => _showVehicleInfo(vehicle),
-        size: MarkerSize.medium,
+        size: MarkerSize.extraSmall,
       );
     }).toList();
   }
@@ -234,7 +234,13 @@ class _MapPageViewState extends State<_MapPageView> {
           'Rozkład jazdy - ${stop.stopName}',
           variant: AppTextVariant.title,
         ),
-        content: BlocBuilder<MapCubit, MapState>(
+        content: BlocConsumer<MapCubit, MapState>(
+          listenWhen: (previous, current) =>
+          previous.exception != current.exception && current.exception != null,
+          listener: (context, state) {
+            _showErrorDialog(context, state.exception.toString());
+            context.read<MapCubit>().clearError();
+          },
           builder: (context, state) {
             if (state.getGtfsScheduleStatus == StateStatus.loading) {
               return const Center(child: CircularProgressIndicator());
@@ -548,17 +554,6 @@ class _MapPageViewState extends State<_MapPageView> {
                   message: LocaleKeys.loading.tr(),
                   variant: AppLoadingVariant.circular,
                   size: AppLoadingSize.medium,
-                ),
-
-              // Error dialog
-              if (state.exception != null)
-                Builder(
-                  builder: (context) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _showErrorDialog(context, state.exception.toString());
-                    });
-                    return const SizedBox.shrink();
-                  },
                 ),
 
               // Floating Action Buttons for map controls
