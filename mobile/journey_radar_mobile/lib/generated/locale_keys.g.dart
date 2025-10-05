@@ -8,5 +8,14 @@ abstract class  LocaleKeys {
   static const unexpectedError = 'unexpectedError';
   static const failedConnectionWithServer = 'failedConnectionWithServer';
   static const serverError = 'serverError';
+  static const myLocation = 'myLocation';
+  static const refresh = 'refresh';
+  static const loading = 'loading';
+  static const alignNorth = 'alignNorth';
+  static const zoomIn = 'zoomIn';
+  static const zoomOut = 'zoomOut';
+  static const coordinates = 'coordinates';
+  static const createdAt = 'createdAt';
+  static const close = 'close';
 
 }
