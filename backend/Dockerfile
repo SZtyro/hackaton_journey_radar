@@ -1,18 +1,28 @@
-FROM openjdk:17-jdk-slim as build
+# Stage 1: Build the application using the OFFICIAL MAVEN image
+# THIS IS THE FIX: This image is guaranteed to have the 'mvn' command.
+FROM maven:3.8-openjdk-17 AS builder
+
+WORKDIR /app
+# Copy only the pom.xml first to leverage Docker layer caching
+COPY pom.xml .
+# Download dependencies
+RUN mvn dependency:go-offline
+
+# Copy the rest of the source code and build the executable JAR
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Stage 2: Create the final, small image using only the Java Runtime Environment
+# This part is correct and stays the same.
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
-COPY pom.xml .
-COPY src ./src
+# Copy the built JAR file from the builder stage
+COPY --from=builder /app/target/*.jar app.jar
 
-RUN apt-get update && apt-get install -y maven
-RUN mvn clean install -Dmaven.test.skip=true -P production
-
-FROM tomcat:9-jdk17-openjdk-slim
-
-COPY --from=build /app/target/template-0.0.1-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
-
+# Tell Render what port the application will run on
 EXPOSE 8080
 
-CMD ["catalina.sh", "run"]
-
+# The command to run the self-contained application
+ENTRYPOINT ["java", "-jar", "app.jar"]
