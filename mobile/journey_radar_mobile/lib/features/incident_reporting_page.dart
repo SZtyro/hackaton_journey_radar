@@ -541,7 +541,10 @@ class _IncidentReportingPageContentState
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: AppSpacing.xs),
+                        SizedBox(
+                          height: AppSpacing.xs,
+                          width: double.maxFinite,
+                        ),
                         BlocBuilder<IncidentReportingCubit,
                             IncidentReportingState>(
                           builder: (context, state) {
@@ -573,6 +576,7 @@ class _IncidentReportingPageContentState
 
                             if (routes.isEmpty) {
                               return Container(
+                                width: double.maxFinite,
                                 padding: EdgeInsets.all(AppSpacing.m),
                                 decoration: BoxDecoration(
                                   border: Border.all(color: Colors.grey),
