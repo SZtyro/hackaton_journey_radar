@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "307152065437",
+    "project_id": "journey-radar-de909",
+    "storage_bucket": "journey-radar-de909.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:307152065437:android:3e56ae55a57420d07a5574",
+        "android_client_info": {
+          "package_name": "com.journeyradar.mobile.journey_radar_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlltI75671lP-RqPfuKQPsQw6SyrfdAc0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

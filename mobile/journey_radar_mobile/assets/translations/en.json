@@ -1,0 +1,17 @@
+{
+  "hello": "Hello",
+  "noInternet": "No internet connection",
+  "unexpectedError": "Unexpected error",
+  "failedConnectionWithServer": "Failed to connect with server",
+  "serverError": "Server error",
+  "myLocation": "My Location",
+  "refresh": "Refresh",
+  "loading": "Loading",
+  "alignNorth": "Align to north",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "coordinates": "Coordinates",
+  "createdAt": "Latitude",
+  "close": "Close",
+  "schedule": "Schedule"
+}
