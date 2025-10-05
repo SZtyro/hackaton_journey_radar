@@ -19,6 +19,7 @@ import 'package:journey_radar_mobile/storage/persistent_storage.dart';
 import 'package:journey_radar_mobile/storage/storage.dart';
 import 'package:journey_radar_mobile/storage/user_storage.dart';
 import 'package:journey_radar_mobile/theme/theme_cubit.dart';
+import 'package:journey_radar_mobile/services/location_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -137,5 +138,10 @@ Future<void> setUpServiceLocator() async {
       dio: userDio,
       baseUrl: AppConstants.baseUrl,
     ),
+  );
+
+  // Register LocationService
+  getIt.registerLazySingleton<LocationService>(
+    () => LocationService(),
   );
 }

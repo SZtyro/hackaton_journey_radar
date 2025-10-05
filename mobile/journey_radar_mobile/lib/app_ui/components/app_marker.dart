@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:journey_radar_mobile/app_ui/app_ui.dart';
+import 'package:journey_radar_mobile/config/constants.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:journey_radar_mobile/app_ui/app_spacing.dart';
 
-/// Generyczny marker zgodny z Material Design 3 expressive
-/// Obsługuje różne typy markerów z animacjami i skalowalnością
-class ExpressiveMarker extends StatelessWidget {
-  const ExpressiveMarker({
+class AppMarker extends StatelessWidget {
+  const AppMarker({
     super.key,
     required this.point,
     required this.onTap,
@@ -18,11 +17,11 @@ class ExpressiveMarker extends StatelessWidget {
     this.size = MarkerSize.medium,
     this.isSelected = false,
     this.isAnimated = true,
-    this.elevation = 4.0,
-    this.borderWidth = 2.0,
-    this.shadowBlur = 8.0,
-    this.shadowSpread = 2.0,
-    this.animationDuration = const Duration(milliseconds: 200),
+    this.elevation = MarkerConstants.defaultElevation,
+    this.borderWidth = MarkerConstants.defaultBorderWidth,
+    this.shadowBlur = MarkerConstants.defaultShadowBlur,
+    this.shadowSpread = MarkerConstants.defaultShadowSpread,
+    this.animationDuration = MarkerConstants.defaultAnimationDuration,
   });
 
   final LatLng point;
@@ -70,7 +69,8 @@ class ExpressiveMarker extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: defaultBackgroundColor.withOpacity(0.3),
+              color: defaultBackgroundColor
+                  .withOpacity(MarkerConstants.shadowOpacity),
               blurRadius: shadowBlur,
               spreadRadius: shadowSpread,
               offset: Offset(0, elevation / 2),
@@ -160,11 +160,11 @@ class ExpressiveMarkerHelper {
     MarkerSize size = MarkerSize.medium,
     bool isSelected = false,
     bool isAnimated = true,
-    double elevation = 4.0,
-    double borderWidth = 2.0,
-    double shadowBlur = 8.0,
-    double shadowSpread = 2.0,
-    Duration animationDuration = const Duration(milliseconds: 200),
+    double elevation = MarkerConstants.defaultElevation,
+    double borderWidth = MarkerConstants.defaultBorderWidth,
+    double shadowBlur = MarkerConstants.defaultShadowBlur,
+    double shadowSpread = MarkerConstants.defaultShadowSpread,
+    Duration animationDuration = MarkerConstants.defaultAnimationDuration,
   }) {
     final markerSize = _getMarkerSize(size);
 
@@ -172,7 +172,7 @@ class ExpressiveMarkerHelper {
       point: point,
       width: markerSize,
       height: markerSize,
-      child: ExpressiveMarker(
+      child: AppMarker(
         point: point,
         onTap: onTap,
         icon: icon,
@@ -220,13 +220,13 @@ class MarkerStyles {
       point: point,
       onTap: onTap,
       iconData: Icons.person,
-      color: Colors.white,
-      backgroundColor: color ?? Colors.blue,
-      borderColor: Colors.white,
+      color: MarkerConstants.defaultIconColor,
+      backgroundColor: color ?? MarkerConstants.defaultUserLocationColor,
+      borderColor: MarkerConstants.defaultBorderColor,
       size: size,
-      elevation: 6.0,
-      shadowBlur: 12.0,
-      shadowSpread: 3.0,
+      elevation: MarkerConstants.userLocationElevation,
+      shadowBlur: MarkerConstants.userLocationShadowBlur,
+      shadowSpread: MarkerConstants.userLocationShadowSpread,
     );
   }
 
@@ -243,14 +243,21 @@ class MarkerStyles {
       point: point,
       onTap: onTap,
       iconData: iconData,
-      color: Colors.white,
-      backgroundColor: backgroundColor ?? color ?? Colors.orange,
-      borderColor: Colors.white,
+      color: MarkerConstants.defaultIconColor,
+      backgroundColor:
+          backgroundColor ?? color ?? MarkerConstants.defaultMapPointColor,
+      borderColor: MarkerConstants.defaultBorderColor,
       size: size,
       isSelected: isSelected,
-      elevation: isSelected ? 8.0 : 4.0,
-      shadowBlur: isSelected ? 12.0 : 8.0,
-      shadowSpread: isSelected ? 3.0 : 2.0,
+      elevation: isSelected
+          ? MarkerConstants.selectedElevation
+          : MarkerConstants.defaultElevation,
+      shadowBlur: isSelected
+          ? MarkerConstants.selectedShadowBlur
+          : MarkerConstants.defaultShadowBlur,
+      shadowSpread: isSelected
+          ? MarkerConstants.selectedShadowSpread
+          : MarkerConstants.defaultShadowSpread,
     );
   }
 
@@ -264,12 +271,14 @@ class MarkerStyles {
       point: point,
       onTap: onTap,
       iconData: Icons.directions_bus,
-      color: Colors.white,
-      backgroundColor: Colors.green,
-      borderColor: Colors.white,
+      color: MarkerConstants.defaultIconColor,
+      backgroundColor: MarkerConstants.defaultBusStopColor,
+      borderColor: MarkerConstants.defaultBorderColor,
       size: size,
       isSelected: isSelected,
-      elevation: isSelected ? 8.0 : 4.0,
+      elevation: isSelected
+          ? MarkerConstants.selectedElevation
+          : MarkerConstants.defaultElevation,
     );
   }
 
@@ -283,12 +292,14 @@ class MarkerStyles {
       point: point,
       onTap: onTap,
       iconData: Icons.landscape,
-      color: Colors.white,
-      backgroundColor: Colors.purple,
-      borderColor: Colors.white,
+      color: MarkerConstants.defaultIconColor,
+      backgroundColor: MarkerConstants.defaultLandmarkColor,
+      borderColor: MarkerConstants.defaultBorderColor,
       size: size,
       isSelected: isSelected,
-      elevation: isSelected ? 8.0 : 4.0,
+      elevation: isSelected
+          ? MarkerConstants.selectedElevation
+          : MarkerConstants.defaultElevation,
     );
   }
 }
