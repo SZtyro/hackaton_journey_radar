@@ -68,6 +68,11 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   final _locationController = TextEditingController();
   final firebaseApi = getIt<FirebasePushNotificationService>();
   final MapController _mapController = MapController();
+  final ScrollController _scrollController = ScrollController();
+
+  // Keys for scroll targets
+  final GlobalKey _routeCardKey = GlobalKey();
+  final GlobalKey _stationCardKey = GlobalKey();
 
   IncidentType? _selectedIncidentType;
   String? _selectedRoute;
@@ -127,6 +132,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   void dispose() {
     _descriptionController.dispose();
     _locationController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -363,6 +369,17 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
     }
   }
 
+  void _scrollToWidget(GlobalKey key) {
+    if (key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        alignment: 0.1, // Scroll to show the widget near the top
+      );
+    }
+  }
+
   void _resetForm() {
     _formKey.currentState?.reset();
     _descriptionController.clear();
@@ -387,6 +404,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         padding: EdgeInsets.all(AppSpacing.m),
         child: Form(
           key: _formKey,
@@ -444,6 +462,11 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
                             onTap: () {
                               setState(() {
                                 _selectedIncidentType = type;
+                              });
+                              // Auto-scroll to route card after a short delay
+                              Future.delayed(const Duration(milliseconds: 100),
+                                  () {
+                                _scrollToWidget(_routeCardKey);
                               });
                             },
                             child: Container(
@@ -513,6 +536,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
               if (_selectedIncidentType != null) ...[
                 // Route selection
                 Card(
+                  key: _routeCardKey,
                   child: Padding(
                     padding: EdgeInsets.all(AppSpacing.m),
                     child: Column(
@@ -542,6 +566,11 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
                             setState(() {
                               _selectedRoute = value;
                             });
+                            // Auto-scroll to station card after a short delay
+                            Future.delayed(const Duration(milliseconds: 100),
+                                () {
+                              _scrollToWidget(_stationCardKey);
+                            });
                           },
                         ),
                       ],
@@ -553,6 +582,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
 
                 // Station selection
                 Card(
+                  key: _stationCardKey,
                   child: Padding(
                     padding: EdgeInsets.all(AppSpacing.m),
                     child: Column(
