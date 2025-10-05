@@ -77,7 +77,6 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
 
   IncidentType? _selectedIncidentType;
   String? _selectedRoute;
-  String? _selectedStation;
   bool _isEmergency = false;
   bool _isSubmitting = false;
 
@@ -178,7 +177,6 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
             ? 'GPS: ${_incidentLocation!.latitude.toStringAsFixed(6)}, ${_incidentLocation!.longitude.toStringAsFixed(6)}'
             : _locationController.text,
         'route': _selectedRoute,
-        'station': _selectedStation,
         'isEmergency': _isEmergency,
         'timestamp': DateTime.now().toIso8601String(),
         'reporterId': 'user_123', // Mock user ID
@@ -246,7 +244,6 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
         incidentDescription: incidentData['description'],
         location: incidentData['location'],
         isEmergency: incidentData['isEmergency'],
-        station: incidentData['station'],
         gpsCoordinates: incidentData['gpsCoordinates'] != null
             ? {
                 'latitude': incidentData['gpsCoordinates']['latitude'],
@@ -388,7 +385,6 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
     setState(() {
       _selectedIncidentType = null;
       _selectedRoute = null;
-      _selectedStation = null;
       _isEmergency = false;
       _currentLocation = null;
       _incidentLocation = null;
@@ -578,56 +574,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
                     ),
                   ),
                 ),
-
                 SizedBox(height: AppSpacing.m),
-
-                // Station selection
-                Card(
-                  key: _stationCardKey,
-                  child: Padding(
-                    padding: EdgeInsets.all(AppSpacing.m),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Stacja',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: AppSpacing.xs),
-                        DropdownButtonFormField<String>(
-                          value: _selectedStation,
-                          decoration: const InputDecoration(
-                            hintText: 'Wybierz stację',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: _stations
-                              .map((station) => DropdownMenuItem(
-                                    value: station,
-                                    child: Text(station),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedStation = value;
-                            });
-                            // Auto-scroll to location card after a short delay
-                            Future.delayed(const Duration(milliseconds: 100),
-                                () {
-                              _scrollToWidget(_locationCardKey);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: AppSpacing.m),
-
-                // Location section - always visible
                 Card(
                   key: _locationCardKey,
                   child: Padding(
