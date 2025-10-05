@@ -1,12 +1,12 @@
 import 'package:equatable/equatable.dart';
 
 class GtfsRouteEntity extends Equatable {
-  final String routeId;
+  final String? routeId;
   final String? agencyId;
   final String? routeShortName;
   final String? routeLongName;
   final String? routeDesc;
-  final int routeType;
+  final int? routeType;
   final String? routeUrl;
   final String? routeColor;
   final String? routeTextColor;
@@ -16,12 +16,12 @@ class GtfsRouteEntity extends Equatable {
   final String? networkId;
 
   const GtfsRouteEntity({
-    required this.routeId,
+    this.routeId,
     this.agencyId,
     this.routeShortName,
     this.routeLongName,
     this.routeDesc,
-    required this.routeType,
+    this.routeType,
     this.routeUrl,
     this.routeColor,
     this.routeTextColor,

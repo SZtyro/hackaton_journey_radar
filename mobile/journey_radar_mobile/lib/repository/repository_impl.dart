@@ -2482,4 +2482,41 @@ class RepositoryImpl implements Repository {
       }
     }
   }
+
+  @override
+  Future<Result<List<VehiclePositionEntity>, Exception>>
+      getVehiclePositions() async {
+    if (useMockApi) {
+      return _getVehiclePositionsFromMock();
+    } else {
+      return _getVehiclePositionsFromRealApi();
+    }
+  }
+
+  // Mock API implementation for vehicle positions
+  Future<Result<List<VehiclePositionEntity>, Exception>>
+      _getVehiclePositionsFromMock() async {
+    try {
+      // For now, return empty list - can be extended with mock data later
+      return const Success([]);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  // Real API implementation for vehicle positions
+  Future<Result<List<VehiclePositionEntity>, Exception>>
+      _getVehiclePositionsFromRealApi() async {
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+      final response = await api!.getVehiclePositions();
+      final vehiclePositions =
+          response.data.map((dto) => dto.toEntity()).toList();
+      return Success(vehiclePositions);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
 }

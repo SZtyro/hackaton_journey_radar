@@ -2,11 +2,11 @@ import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 
 class GtfsStopEntity extends Equatable {
-  final String stopId;
+  final String? stopId;
   final String? stopCode;
-  final String stopName;
+  final String? stopName;
   final String? stopDesc;
-  final LatLng position;
+  final LatLng? position;
   final String? zoneId;
   final String? stopUrl;
   final int? locationType;
@@ -17,11 +17,11 @@ class GtfsStopEntity extends Equatable {
   final String? platformCode;
 
   const GtfsStopEntity({
-    required this.stopId,
+    this.stopId,
     this.stopCode,
-    required this.stopName,
+    this.stopName,
     this.stopDesc,
-    required this.position,
+    this.position,
     this.zoneId,
     this.stopUrl,
     this.locationType,

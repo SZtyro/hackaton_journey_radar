@@ -23,6 +23,7 @@ class MapCubit extends Cubit<MapState> {
     await getCurrentLocation();
     await getGtfsRoutes();
     await getGtfsStops();
+    await getVehiclePositions();
     await _loadGtfsShapesForAllRoutes();
   }
 
@@ -30,7 +31,9 @@ class MapCubit extends Cubit<MapState> {
     if (state.gtfsRoutes == null) return;
 
     for (final route in state.gtfsRoutes!) {
-      await getGtfsShapes(routeId: route.routeId);
+      if (route.routeId != null) {
+        await getGtfsShapes(routeId: route.routeId!);
+      }
     }
   }
 
@@ -64,7 +67,6 @@ class MapCubit extends Cubit<MapState> {
       ));
     }
   }
-
 
   // GTFS operations
   Future<void> getGtfsRoutes({
@@ -383,5 +385,46 @@ class MapCubit extends Cubit<MapState> {
 
   void setSelectedGtfsRoute(GtfsRouteEntity? route) {
     emit(state.copyWith(selectedGtfsRoute: route));
+  }
+
+  void clearError() {
+    emit(state.copyWith(exception: null));
+  }
+
+  Future<void> getVehiclePositions() async {
+    emit(state.copyWith(
+      getVehiclePositionsStatus: StateStatus.loading,
+    ));
+
+    try {
+      final result = await mapRepository.getVehiclePositions();
+
+      switch (result) {
+        case Success():
+          {
+            emit(state.copyWith(
+              getVehiclePositionsStatus: StateStatus.success,
+              vehiclePositions: result.data,
+            ));
+          }
+        case Failure(error: final exception):
+          {
+            emit(state.copyWith(
+              getVehiclePositionsStatus: StateStatus.failure,
+              exception: exception,
+            ));
+          }
+      }
+    } catch (error, stackTrace) {
+      addError(error, stackTrace);
+      final submissionStatus = switch (error) {
+        final TimeoutException _ => StateStatus.failure,
+        _ => StateStatus.failure,
+      };
+      emit(state.copyWith(
+        getVehiclePositionsStatus: submissionStatus,
+        exception: error is Exception ? error : Exception(error.toString()),
+      ));
+    }
   }
 }

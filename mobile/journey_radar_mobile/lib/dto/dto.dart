@@ -13,3 +13,4 @@ export 'gtfs_stop_dto.dart';
 export 'gtfs_stop_time_dto.dart';
 export 'gtfs_trip_dto.dart';
 export 'report_dto.dart';
+export 'vehicle_position_dto.dart';

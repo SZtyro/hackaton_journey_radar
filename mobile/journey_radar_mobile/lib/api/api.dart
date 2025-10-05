@@ -505,4 +505,8 @@ abstract class Api {
 
   @GET('/api/reports/count/emergency')
   Future<HttpResponse<int>> getEmergencyReportsCount();
+
+  // Vehicle positions endpoint
+  @GET('/api/vehicles/positions')
+  Future<HttpResponse<List<VehiclePositionDto>>> getVehiclePositions();
 }

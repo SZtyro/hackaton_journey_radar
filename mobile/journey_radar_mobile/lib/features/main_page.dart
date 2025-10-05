@@ -4,6 +4,7 @@ import 'package:journey_radar_mobile/config/firebase_push_notifications_service.
 import 'package:journey_radar_mobile/config/language_provider.dart';
 import 'package:journey_radar_mobile/config/logger.dart';
 import 'package:journey_radar_mobile/config/service_locator.dart';
+import 'package:journey_radar_mobile/features/destination_page.dart';
 import 'package:journey_radar_mobile/features/incident_reporting_page.dart';
 import 'package:journey_radar_mobile/features/map/map.dart';
 import 'package:journey_radar_mobile/features/schedule_page.dart';
@@ -22,6 +23,7 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _pages = [
     const MapPage(),
+    const DestinationPage(),
     const SchedulePage(),
     const IncidentReportingPage(),
     const SettingsPage(),
@@ -33,6 +35,12 @@ class _MainPageState extends State<MainPage> {
       activeIcon: const Icon(Icons.map),
       label: 'Mapa',
       tooltip: 'Otwórz mapę Krakowa',
+    ),
+    AppBottomNavigationItem(
+      icon: const Icon(Icons.directions_bus_outlined),
+      activeIcon: const Icon(Icons.directions_bus),
+      label: 'Cel',
+      tooltip: 'Wybierz cel podróży',
     ),
     AppBottomNavigationItem(
       icon: const Icon(Icons.schedule_outlined),

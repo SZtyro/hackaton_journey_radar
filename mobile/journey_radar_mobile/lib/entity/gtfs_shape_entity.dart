@@ -2,15 +2,15 @@ import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 
 class GtfsShapeEntity extends Equatable {
-  final String shapeId;
-  final LatLng position;
-  final int sequence;
+  final String? shapeId;
+  final LatLng? position;
+  final int? sequence;
   final double? distanceTraveled;
 
   const GtfsShapeEntity({
-    required this.shapeId,
-    required this.position,
-    required this.sequence,
+    this.shapeId,
+    this.position,
+    this.sequence,
     this.distanceTraveled,
   });
 

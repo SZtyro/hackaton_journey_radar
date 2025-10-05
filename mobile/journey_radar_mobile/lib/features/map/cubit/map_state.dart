@@ -13,6 +13,7 @@ class MapState extends Equatable {
   final StateStatus getGtfsShapesStatus;
   final StateStatus getGtfsScheduleStatus;
   final StateStatus getGtfsDelaysStatus;
+  final StateStatus getVehiclePositionsStatus;
 
   final LatLng? currentLocation;
   final List<MapPointEntity>? mapPoints;
@@ -26,6 +27,7 @@ class MapState extends Equatable {
   final List<GtfsShapeEntity>? gtfsShapes;
   final List<GtfsScheduleWithDelaysEntity>? gtfsSchedule;
   final List<GtfsDelayEntity>? gtfsDelays;
+  final List<VehiclePositionEntity>? vehiclePositions;
 
   final MapPointEntity? selectedMapPoint;
   final BusRouteEntity? selectedBusRoute;
@@ -45,6 +47,7 @@ class MapState extends Equatable {
     this.getGtfsShapesStatus = StateStatus.initial,
     this.getGtfsScheduleStatus = StateStatus.initial,
     this.getGtfsDelaysStatus = StateStatus.initial,
+    this.getVehiclePositionsStatus = StateStatus.initial,
     this.currentLocation,
     this.mapPoints,
     this.busRoutes,
@@ -55,6 +58,7 @@ class MapState extends Equatable {
     this.gtfsShapes,
     this.gtfsSchedule,
     this.gtfsDelays,
+    this.vehiclePositions,
     this.selectedMapPoint,
     this.selectedBusRoute,
     this.selectedGtfsStop,
@@ -73,6 +77,7 @@ class MapState extends Equatable {
     StateStatus? getGtfsShapesStatus,
     StateStatus? getGtfsScheduleStatus,
     StateStatus? getGtfsDelaysStatus,
+    StateStatus? getVehiclePositionsStatus,
     LatLng? currentLocation,
     List<MapPointEntity>? mapPoints,
     List<BusRouteEntity>? busRoutes,
@@ -83,6 +88,7 @@ class MapState extends Equatable {
     List<GtfsShapeEntity>? gtfsShapes,
     List<GtfsScheduleWithDelaysEntity>? gtfsSchedule,
     List<GtfsDelayEntity>? gtfsDelays,
+    List<VehiclePositionEntity>? vehiclePositions,
     MapPointEntity? selectedMapPoint,
     BusRouteEntity? selectedBusRoute,
     GtfsStopEntity? selectedGtfsStop,
@@ -103,6 +109,8 @@ class MapState extends Equatable {
       getGtfsScheduleStatus:
           getGtfsScheduleStatus ?? this.getGtfsScheduleStatus,
       getGtfsDelaysStatus: getGtfsDelaysStatus ?? this.getGtfsDelaysStatus,
+      getVehiclePositionsStatus:
+          getVehiclePositionsStatus ?? this.getVehiclePositionsStatus,
       currentLocation: currentLocation ?? this.currentLocation,
       mapPoints: mapPoints ?? this.mapPoints,
       busRoutes: busRoutes ?? this.busRoutes,
@@ -113,6 +121,7 @@ class MapState extends Equatable {
       gtfsShapes: gtfsShapes ?? this.gtfsShapes,
       gtfsSchedule: gtfsSchedule ?? this.gtfsSchedule,
       gtfsDelays: gtfsDelays ?? this.gtfsDelays,
+      vehiclePositions: vehiclePositions ?? this.vehiclePositions,
       selectedMapPoint: selectedMapPoint ?? this.selectedMapPoint,
       selectedBusRoute: selectedBusRoute ?? this.selectedBusRoute,
       selectedGtfsStop: selectedGtfsStop ?? this.selectedGtfsStop,
@@ -133,6 +142,7 @@ class MapState extends Equatable {
         getGtfsShapesStatus,
         getGtfsScheduleStatus,
         getGtfsDelaysStatus,
+        getVehiclePositionsStatus,
         currentLocation,
         mapPoints,
         busRoutes,
@@ -143,6 +153,7 @@ class MapState extends Equatable {
         gtfsShapes,
         gtfsSchedule,
         gtfsDelays,
+        vehiclePositions,
         selectedMapPoint,
         selectedBusRoute,
         selectedGtfsStop,

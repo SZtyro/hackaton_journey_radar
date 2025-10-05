@@ -700,7 +700,7 @@ class MockMapApi {
     }
 
     return _mockGtfsShapes.where((shape) => shape.shapeId == shapeId).toList()
-      ..sort((a, b) => a.sequence.compareTo(b.sequence));
+      ..sort((a, b) => (a.sequence ?? 0).compareTo(b.sequence ?? 0));
   }
 
   static Future<List<GtfsStopEntity>> getGtfsStopsForRoute({
@@ -782,7 +782,8 @@ class MockMapApi {
 
     final searchRadius = radius ?? 1.0; // Default 1km radius
     var results = _mockGtfsStops.where((stop) {
-      final distance = _calculateDistance(location, stop.position);
+      if (stop.position == null) return false;
+      final distance = _calculateDistance(location, stop.position!);
       return distance <= searchRadius;
     }).toList();
 

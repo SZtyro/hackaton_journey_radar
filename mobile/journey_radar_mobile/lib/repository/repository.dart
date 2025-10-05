@@ -341,6 +341,9 @@ abstract class Repository {
     required String routeId,
   });
 
+  // Vehicle positions operations
+  Future<Result<List<VehiclePositionEntity>, Exception>> getVehiclePositions();
+
   // Reports operations
   Future<Result<List<ReportEntity>, Exception>> getReports();
 

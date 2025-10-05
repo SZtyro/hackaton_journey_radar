@@ -9,13 +9,13 @@ part of 'gtfs_schedule_with_delays_dto.dart';
 GtfsScheduleWithDelaysDto _$GtfsScheduleWithDelaysDtoFromJson(
         Map<String, dynamic> json) =>
     GtfsScheduleWithDelaysDto(
-      stopId: json['stop_id'] as String,
-      stopName: json['stop_name'] as String,
-      routeId: json['route_id'] as String,
+      stopId: json['stop_id'] as String?,
+      stopName: json['stop_name'] as String?,
+      routeId: json['route_id'] as String?,
       routeShortName: json['route_short_name'] as String?,
       routeLongName: json['route_long_name'] as String?,
       routeColor: json['route_color'] as String?,
-      tripId: json['trip_id'] as String,
+      tripId: json['trip_id'] as String?,
       tripHeadsign: json['trip_headsign'] as String?,
       scheduledArrivalTime: json['scheduled_arrival_time'] as String?,
       scheduledDepartureTime: json['scheduled_departure_time'] as String?,
@@ -24,12 +24,12 @@ GtfsScheduleWithDelaysDto _$GtfsScheduleWithDelaysDtoFromJson(
       delaySeconds: (json['delay_seconds'] as num?)?.toInt(),
       delayType: json['delay_type'] as String?,
       delayReason: json['delay_reason'] as String?,
-      stopSequence: (json['stop_sequence'] as num).toInt(),
+      stopSequence: (json['stop_sequence'] as num?)?.toInt(),
       directionId: (json['direction_id'] as num?)?.toInt(),
       wheelchairAccessible: (json['wheelchair_accessible'] as num?)?.toInt(),
       bikesAllowed: (json['bikes_allowed'] as num?)?.toInt(),
-      serviceId: json['service_id'] as String,
-      isRealTime: json['is_real_time'] as bool,
+      serviceId: json['service_id'] as String?,
+      isRealTime: json['is_real_time'] as bool?,
     );
 
 Map<String, dynamic> _$GtfsScheduleWithDelaysDtoToJson(

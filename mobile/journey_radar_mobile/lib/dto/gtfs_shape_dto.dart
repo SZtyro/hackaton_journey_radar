@@ -7,25 +7,25 @@ part 'gtfs_shape_dto.g.dart';
 @JsonSerializable()
 class GtfsShapeDto {
   @JsonKey(name: 'shape_id')
-  final String shapeId;
+  final String? shapeId;
 
   @JsonKey(name: 'shape_pt_lat')
-  final double shapePtLat;
+  final double? shapePtLat;
 
   @JsonKey(name: 'shape_pt_lon')
-  final double shapePtLon;
+  final double? shapePtLon;
 
   @JsonKey(name: 'shape_pt_sequence')
-  final int shapePtSequence;
+  final int? shapePtSequence;
 
   @JsonKey(name: 'shape_dist_traveled')
   final double? shapeDistTraveled;
 
   const GtfsShapeDto({
-    required this.shapeId,
-    required this.shapePtLat,
-    required this.shapePtLon,
-    required this.shapePtSequence,
+    this.shapeId,
+    this.shapePtLat,
+    this.shapePtLon,
+    this.shapePtSequence,
     this.shapeDistTraveled,
   });
 
@@ -37,7 +37,9 @@ class GtfsShapeDto {
   GtfsShapeEntity toEntity() {
     return GtfsShapeEntity(
       shapeId: shapeId,
-      position: LatLng(shapePtLat, shapePtLon),
+      position: shapePtLat != null && shapePtLon != null
+          ? LatLng(shapePtLat!, shapePtLon!)
+          : null,
       sequence: shapePtSequence,
       distanceTraveled: shapeDistTraveled,
     );
@@ -46,8 +48,8 @@ class GtfsShapeDto {
   factory GtfsShapeDto.fromEntity(GtfsShapeEntity entity) {
     return GtfsShapeDto(
       shapeId: entity.shapeId,
-      shapePtLat: entity.position.latitude,
-      shapePtLon: entity.position.longitude,
+      shapePtLat: entity.position?.latitude,
+      shapePtLon: entity.position?.longitude,
       shapePtSequence: entity.sequence,
       shapeDistTraveled: entity.distanceTraveled,
     );

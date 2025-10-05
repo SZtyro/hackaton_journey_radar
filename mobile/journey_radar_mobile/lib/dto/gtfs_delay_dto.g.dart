@@ -7,12 +7,12 @@ part of 'gtfs_delay_dto.dart';
 // **************************************************************************
 
 GtfsDelayDto _$GtfsDelayDtoFromJson(Map<String, dynamic> json) => GtfsDelayDto(
-      tripId: json['trip_id'] as String,
-      stopId: json['stop_id'] as String,
-      delaySeconds: (json['delay_seconds'] as num).toInt(),
-      delayType: json['delay_type'] as String,
+      tripId: json['trip_id'] as String?,
+      stopId: json['stop_id'] as String?,
+      delaySeconds: (json['delay_seconds'] as num?)?.toInt(),
+      delayType: json['delay_type'] as String?,
       reason: json['reason'] as String?,
-      createdAt: json['created_at'] as String,
+      createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
     );
 

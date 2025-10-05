@@ -13,5 +13,6 @@
   "coordinates": "Coordinates",
   "createdAt": "Latitude",
   "close": "Close",
+  "error": "Error",
   "schedule": "Schedule"
 }

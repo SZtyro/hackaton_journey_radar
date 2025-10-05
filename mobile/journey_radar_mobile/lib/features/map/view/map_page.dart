@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,13 +41,27 @@ class _MapPageView extends StatefulWidget {
 
 class _MapPageViewState extends State<_MapPageView> {
   final MapController _mapController = MapController();
+  Timer? _vehiclePositionsTimer;
 
   List<Marker> _buildGtfsStopMarkers(List<GtfsStopEntity> stops) {
-    return stops.map((stop) {
+    return stops.where((stop) => stop.position != null).map((stop) {
       return AppMarkerHelper.busStop(
-        point: stop.position,
+        point: stop.position!,
         onTap: () => _showGtfsStopInfo(stop),
         size: MarkerSize.small,
+      );
+    }).toList();
+  }
+
+  List<Marker> _buildVehiclePositionMarkers(
+      List<VehiclePositionEntity> vehiclePositions) {
+    return vehiclePositions
+        .where((vehicle) => vehicle.position != null)
+        .map((vehicle) {
+      return AppMarkerHelper.busStop(
+        point: vehicle.position!,
+        onTap: () => _showVehicleInfo(vehicle),
+        size: MarkerSize.medium,
       );
     }).toList();
   }
@@ -57,7 +73,9 @@ class _MapPageViewState extends State<_MapPageView> {
     // Grupuj kształty według shapeId
     final Map<String, List<GtfsShapeEntity>> groupedShapes = {};
     for (final shape in shapes) {
-      groupedShapes.putIfAbsent(shape.shapeId, () => []).add(shape);
+      if (shape.shapeId != null) {
+        groupedShapes.putIfAbsent(shape.shapeId!, () => []).add(shape);
+      }
     }
 
     List<Polyline> polylines = [];
@@ -67,7 +85,7 @@ class _MapPageViewState extends State<_MapPageView> {
       final shapeList = entry.value;
 
       // Sortuj według sekwencji
-      shapeList.sort((a, b) => a.sequence.compareTo(b.sequence));
+      shapeList.sort((a, b) => (a.sequence ?? 0).compareTo(b.sequence ?? 0));
 
       // Znajdź kolor trasy
       String routeColor = '#000000';
@@ -83,7 +101,10 @@ class _MapPageViewState extends State<_MapPageView> {
 
       polylines.add(
         Polyline(
-          points: shapeList.map((shape) => shape.position).toList(),
+          points: shapeList
+              .where((shape) => shape.position != null)
+              .map((shape) => shape.position!)
+              .toList(),
           color: _parseColor(routeColor),
           strokeWidth: 4.0,
         ),
@@ -102,7 +123,7 @@ class _MapPageViewState extends State<_MapPageView> {
       context: context,
       builder: (context) => AlertDialog(
         title: AppText(
-          stop.stopName,
+          stop.stopName ?? 'Nieznany przystanek',
           variant: AppTextVariant.title,
         ),
         content: Column(
@@ -116,10 +137,12 @@ class _MapPageViewState extends State<_MapPageView> {
               ),
               SizedBox(height: AppSpacing.s),
             ],
-            AppText(
-              'Współrzędne: ${stop.position.latitude.toStringAsFixed(4)}, ${stop.position.longitude.toStringAsFixed(4)}',
-              variant: AppTextVariant.caption,
-            ),
+            if (stop.position != null) ...[
+              AppText(
+                'Współrzędne: ${stop.position!.latitude.toStringAsFixed(4)}, ${stop.position!.longitude.toStringAsFixed(4)}',
+                variant: AppTextVariant.caption,
+              ),
+            ],
             if (stop.wheelchairBoarding != null) ...[
               SizedBox(height: AppSpacing.s),
               AppText(
@@ -150,10 +173,60 @@ class _MapPageViewState extends State<_MapPageView> {
 
   void _showGtfsSchedule(GtfsStopEntity stop) {
     // Pobierz rozkład jazdy dla przystanku
-    context
-        .read<MapCubit>()
-        .getGtfsScheduleForStop(stopId: stop.stopId, limit: 10);
+    if (stop.stopId != null) {
+      context
+          .read<MapCubit>()
+          .getGtfsScheduleForStop(stopId: stop.stopId!, limit: 10);
+      _showGtfsScheduleDialog(stop);
+    }
+  }
 
+  void _showVehicleInfo(VehiclePositionEntity vehicle) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: AppText(
+          'Pojazd ${vehicle.vehicleId ?? 'Nieznany'}',
+          variant: AppTextVariant.title,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (vehicle.vehicleId != null) ...[
+              AppText(
+                'ID pojazdu: ${vehicle.vehicleId}',
+                variant: AppTextVariant.body,
+              ),
+              SizedBox(height: AppSpacing.s),
+            ],
+            if (vehicle.tripId != null) ...[
+              AppText(
+                'ID trasy: ${vehicle.tripId}',
+                variant: AppTextVariant.body,
+              ),
+              SizedBox(height: AppSpacing.s),
+            ],
+            if (vehicle.position != null) ...[
+              AppText(
+                'Współrzędne: ${vehicle.position!.latitude.toStringAsFixed(4)}, ${vehicle.position!.longitude.toStringAsFixed(4)}',
+                variant: AppTextVariant.caption,
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          AppButton(
+            text: LocaleKeys.close.tr(),
+            variant: AppButtonVariant.primary,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGtfsScheduleDialog(GtfsStopEntity stop) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -220,7 +293,7 @@ class _MapPageViewState extends State<_MapPageView> {
                                 '',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          if (schedule.isRealTime)
+                          if (schedule.isRealTime == true)
                             const Icon(Icons.access_time,
                                 color: Colors.green, size: 16),
                         ],
@@ -281,6 +354,56 @@ class _MapPageViewState extends State<_MapPageView> {
     context.read<MapCubit>().getGtfsStops(limit: 20);
   }
 
+  void _showErrorDialog(BuildContext context, String errorMessage) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            AppIcon(
+              icon: Icons.error,
+              variant: AppIconVariant.error,
+              size: AppIconSize.medium,
+            ),
+            SizedBox(width: AppSpacing.s),
+            AppText(
+              LocaleKeys.error.tr(),
+              variant: AppTextVariant.title,
+            ),
+          ],
+        ),
+        content: AppText(
+          errorMessage,
+          variant: AppTextVariant.body,
+        ),
+        actions: [
+          AppButton(
+            text: LocaleKeys.close.tr(),
+            variant: AppButtonVariant.secondary,
+            size: AppButtonSize.medium,
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Clear the error state
+              context.read<MapCubit>().clearError();
+            },
+          ),
+          AppButton(
+            text: LocaleKeys.refresh.tr(),
+            variant: AppButtonVariant.primary,
+            size: AppButtonSize.medium,
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Clear the error state and refresh data
+              context.read<MapCubit>().clearError();
+              _refreshData(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   void _alignToNorth() {
     _mapController.rotate(MapConstants.northRotation);
   }
@@ -303,6 +426,26 @@ class _MapPageViewState extends State<_MapPageView> {
       _mapController.camera.center,
       newZoom,
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Start auto-refresh timer for vehicle positions every 30 seconds
+    _vehiclePositionsTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (timer) {
+        if (mounted) {
+          context.read<MapCubit>().getVehiclePositions();
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _vehiclePositionsTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -376,6 +519,11 @@ class _MapPageViewState extends State<_MapPageView> {
                   if (state.gtfsStops != null)
                     MarkerLayer(
                         markers: _buildGtfsStopMarkers(state.gtfsStops!)),
+                  // Markery pozycji pojazdów
+                  if (state.vehiclePositions != null)
+                    MarkerLayer(
+                        markers: _buildVehiclePositionMarkers(
+                            state.vehiclePositions!)),
                   // Marker lokalizacji użytkownika
                   if (state.currentLocation != null)
                     MarkerLayer(
@@ -401,38 +549,15 @@ class _MapPageViewState extends State<_MapPageView> {
                   size: AppLoadingSize.medium,
                 ),
 
-              // Error message
+              // Error dialog
               if (state.exception != null)
-                Positioned(
-                  top: AppSpacing.m,
-                  left: AppSpacing.m,
-                  right: AppSpacing.m,
-                  child: AppCard(
-                    variant: AppCardVariant.elevated,
-                    child: Row(
-                      children: [
-                        AppIcon(
-                          icon: Icons.error,
-                          variant: AppIconVariant.error,
-                          size: AppIconSize.medium,
-                        ),
-                        SizedBox(width: AppSpacing.s),
-                        Expanded(
-                          child: AppText(
-                            state.exception.toString(),
-                            variant: AppTextVariant.error,
-                          ),
-                        ),
-                        SizedBox(width: AppSpacing.s),
-                        AppButton(
-                          text: LocaleKeys.refresh.tr(),
-                          variant: AppButtonVariant.primary,
-                          size: AppButtonSize.small,
-                          onPressed: () => _refreshData(context),
-                        ),
-                      ],
-                    ),
-                  ),
+                Builder(
+                  builder: (context) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _showErrorDialog(context, state.exception.toString());
+                    });
+                    return const SizedBox.shrink();
+                  },
                 ),
 
               // Floating Action Buttons for map controls

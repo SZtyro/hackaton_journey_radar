@@ -17,6 +17,7 @@ abstract class  LocaleKeys {
   static const coordinates = 'coordinates';
   static const createdAt = 'createdAt';
   static const close = 'close';
+  static const error = 'error';
   static const schedule = 'schedule';
 
 }

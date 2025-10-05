@@ -6,33 +6,33 @@ part 'gtfs_delay_dto.g.dart';
 @JsonSerializable()
 class GtfsDelayDto {
   @JsonKey(name: 'trip_id')
-  final String tripId;
+  final String? tripId;
 
   @JsonKey(name: 'stop_id')
-  final String stopId;
+  final String? stopId;
 
   @JsonKey(name: 'delay_seconds')
-  final int delaySeconds;
+  final int? delaySeconds;
 
   @JsonKey(name: 'delay_type')
-  final String delayType; // 'arrival' or 'departure'
+  final String? delayType; // 'arrival' or 'departure'
 
   @JsonKey(name: 'reason')
   final String? reason;
 
   @JsonKey(name: 'created_at')
-  final String createdAt;
+  final String? createdAt;
 
   @JsonKey(name: 'updated_at')
   final String? updatedAt;
 
   const GtfsDelayDto({
-    required this.tripId,
-    required this.stopId,
-    required this.delaySeconds,
-    required this.delayType,
+    this.tripId,
+    this.stopId,
+    this.delaySeconds,
+    this.delayType,
     this.reason,
-    required this.createdAt,
+    this.createdAt,
     this.updatedAt,
   });
 
@@ -48,7 +48,7 @@ class GtfsDelayDto {
       delaySeconds: delaySeconds,
       delayType: delayType,
       reason: reason,
-      createdAt: DateTime.parse(createdAt),
+      createdAt: createdAt != null ? DateTime.parse(createdAt!) : null,
       updatedAt: updatedAt != null ? DateTime.parse(updatedAt!) : null,
     );
   }
@@ -60,7 +60,7 @@ class GtfsDelayDto {
       delaySeconds: entity.delaySeconds,
       delayType: entity.delayType,
       reason: entity.reason,
-      createdAt: entity.createdAt.toIso8601String(),
+      createdAt: entity.createdAt?.toIso8601String(),
       updatedAt: entity.updatedAt?.toIso8601String(),
     );
   }
