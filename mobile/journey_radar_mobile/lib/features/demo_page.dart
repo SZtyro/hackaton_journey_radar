@@ -30,6 +30,7 @@ class _DemoPageState extends State<DemoPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Demo - Generyczne komponenty'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(AppSpacing.m),

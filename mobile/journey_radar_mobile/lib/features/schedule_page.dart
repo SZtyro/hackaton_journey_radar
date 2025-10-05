@@ -69,6 +69,7 @@ class _SchedulePageState extends State<SchedulePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Rozkład jazdy'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(AppSpacing.m),

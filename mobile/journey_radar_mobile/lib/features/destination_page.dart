@@ -213,9 +213,7 @@ class _DestinationPageState extends State<DestinationPage> {
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('Wybierz cel podróży'),
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        elevation: 0,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         centerTitle: true,
       ),
       body: SingleChildScrollView(
