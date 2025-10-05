@@ -438,4 +438,71 @@ abstract class Api {
   Future<HttpResponse<List<GtfsDelayDto>>> getGtfsDelaysForRoute({
     @Path('routeId') required String routeId,
   });
+
+  // Reports endpoints
+  @GET('/api/reports')
+  Future<HttpResponse<List<ReportDto>>> getReports();
+
+  @GET('/api/reports/{id}')
+  Future<HttpResponse<ReportDto>> getReport({
+    @Path('id') required int id,
+  });
+
+  @POST('/api/reports')
+  Future<HttpResponse<ReportDto>> createReport({
+    @Body() required ReportDto report,
+  });
+
+  @PUT('/api/reports/{id}')
+  Future<HttpResponse<ReportDto>> updateReport({
+    @Path('id') required int id,
+    @Body() required ReportDto report,
+  });
+
+  @DELETE('/api/reports/{id}')
+  Future<HttpResponse<void>> deleteReport({
+    @Path('id') required int id,
+  });
+
+  @GET('/api/reports/type/{type}')
+  Future<HttpResponse<List<ReportDto>>> getReportsByType({
+    @Path('type') required String type,
+  });
+
+  @GET('/api/reports/timerange')
+  Future<HttpResponse<List<ReportDto>>> getReportsByTimeRange({
+    @Query('startTime') required int startTime,
+    @Query('endTime') required int endTime,
+  });
+
+  @GET('/api/reports/route/{routeId}')
+  Future<HttpResponse<List<ReportDto>>> getReportsByRoute({
+    @Path('routeId') required String routeId,
+  });
+
+  @GET('/api/reports/route/{routeId}/emergency')
+  Future<HttpResponse<List<ReportDto>>> getEmergencyReportsByRoute({
+    @Path('routeId') required String routeId,
+  });
+
+  @GET('/api/reports/recent/{hours}')
+  Future<HttpResponse<List<ReportDto>>> getRecentReports({
+    @Path('hours') required int hours,
+  });
+
+  @GET('/api/reports/emergency/{isEmergency}')
+  Future<HttpResponse<List<ReportDto>>> getReportsByEmergencyStatus({
+    @Path('isEmergency') required bool isEmergency,
+  });
+
+  @GET('/api/reports/count')
+  Future<HttpResponse<int>> getReportsCount();
+
+  @GET('/api/reports/count/type/{type}')
+  Future<HttpResponse<int>> getReportsCountByType({
+    @Path('type') required String type,
+  });
+
+  @GET('/api/reports/count/emergency')
+  Future<HttpResponse<int>> getEmergencyReportsCount();
 }

@@ -12,3 +12,4 @@ export 'gtfs_shape_entity.dart';
 export 'gtfs_stop_entity.dart';
 export 'gtfs_stop_time_entity.dart';
 export 'gtfs_trip_entity.dart';
+export 'report_entity.dart';

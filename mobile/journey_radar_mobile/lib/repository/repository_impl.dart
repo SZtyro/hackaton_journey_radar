@@ -2204,4 +2204,282 @@ class RepositoryImpl implements Repository {
       }
     }
   }
+
+  // Reports operations
+  @override
+  Future<Result<List<ReportEntity>, Exception>> getReports() async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getReports();
+        final reports = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(reports);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<ReportEntity, Exception>> getReport({
+    required int id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getReport(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<ReportEntity, Exception>> createReport({
+    required ReportEntity report,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = ReportDto.fromEntity(report);
+        final response = await api!.createReport(report: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<ReportEntity, Exception>> updateReport({
+    required int id,
+    required ReportEntity report,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = ReportDto.fromEntity(report);
+        final response = await api!.updateReport(id: id, report: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteReport({
+    required int id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteReport(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<ReportEntity>, Exception>> getReportsByType({
+    required String type,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getReportsByType(type: type);
+        final reports = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(reports);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<ReportEntity>, Exception>> getReportsByTimeRange({
+    required int startTime,
+    required int endTime,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getReportsByTimeRange(
+          startTime: startTime,
+          endTime: endTime,
+        );
+        final reports = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(reports);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<ReportEntity>, Exception>> getReportsByRoute({
+    required String routeId,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getReportsByRoute(routeId: routeId);
+        final reports = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(reports);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<ReportEntity>, Exception>> getEmergencyReportsByRoute({
+    required String routeId,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response =
+            await api!.getEmergencyReportsByRoute(routeId: routeId);
+        final reports = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(reports);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<ReportEntity>, Exception>> getRecentReports({
+    required int hours,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getRecentReports(hours: hours);
+        final reports = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(reports);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<ReportEntity>, Exception>> getReportsByEmergencyStatus({
+    required bool isEmergency,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getReportsByEmergencyStatus(
+          isEmergency: isEmergency,
+        );
+        final reports = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(reports);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getReportsCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getReportsCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getReportsCountByType({
+    required String type,
+  }) async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getReportsCountByType(type: type);
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getEmergencyReportsCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getEmergencyReportsCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
 }

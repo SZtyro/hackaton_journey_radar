@@ -4,7 +4,6 @@ import 'package:journey_radar_mobile/config/firebase_push_notifications_service.
 import 'package:journey_radar_mobile/config/language_provider.dart';
 import 'package:journey_radar_mobile/config/logger.dart';
 import 'package:journey_radar_mobile/config/service_locator.dart';
-import 'package:journey_radar_mobile/features/home_page.dart';
 import 'package:journey_radar_mobile/features/incident_reporting_page.dart';
 import 'package:journey_radar_mobile/features/map/map.dart';
 import 'package:journey_radar_mobile/features/schedule_page.dart';
@@ -22,7 +21,6 @@ class _MainPageState extends State<MainPage> {
   final firebaseApi = getIt<FirebasePushNotificationService>();
 
   final List<Widget> _pages = [
-    const HomePage(),
     const MapPage(),
     const SchedulePage(),
     const IncidentReportingPage(),
@@ -30,12 +28,6 @@ class _MainPageState extends State<MainPage> {
   ];
 
   final List<AppBottomNavigationItem> _navigationItems = [
-    AppBottomNavigationItem(
-      icon: const Icon(Icons.home_outlined),
-      activeIcon: const Icon(Icons.home),
-      label: 'Strona główna',
-      tooltip: 'Przejdź do strony głównej',
-    ),
     AppBottomNavigationItem(
       icon: const Icon(Icons.map_outlined),
       activeIcon: const Icon(Icons.map),

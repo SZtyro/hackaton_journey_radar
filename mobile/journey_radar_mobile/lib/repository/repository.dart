@@ -340,6 +340,59 @@ abstract class Repository {
   Future<Result<List<GtfsDelayEntity>, Exception>> getGtfsDelaysForRoute({
     required String routeId,
   });
+
+  // Reports operations
+  Future<Result<List<ReportEntity>, Exception>> getReports();
+
+  Future<Result<ReportEntity, Exception>> getReport({
+    required int id,
+  });
+
+  Future<Result<ReportEntity, Exception>> createReport({
+    required ReportEntity report,
+  });
+
+  Future<Result<ReportEntity, Exception>> updateReport({
+    required int id,
+    required ReportEntity report,
+  });
+
+  Future<Result<void, Exception>> deleteReport({
+    required int id,
+  });
+
+  Future<Result<List<ReportEntity>, Exception>> getReportsByType({
+    required String type,
+  });
+
+  Future<Result<List<ReportEntity>, Exception>> getReportsByTimeRange({
+    required int startTime,
+    required int endTime,
+  });
+
+  Future<Result<List<ReportEntity>, Exception>> getReportsByRoute({
+    required String routeId,
+  });
+
+  Future<Result<List<ReportEntity>, Exception>> getEmergencyReportsByRoute({
+    required String routeId,
+  });
+
+  Future<Result<List<ReportEntity>, Exception>> getRecentReports({
+    required int hours,
+  });
+
+  Future<Result<List<ReportEntity>, Exception>> getReportsByEmergencyStatus({
+    required bool isEmergency,
+  });
+
+  Future<Result<int, Exception>> getReportsCount();
+
+  Future<Result<int, Exception>> getReportsCountByType({
+    required String type,
+  });
+
+  Future<Result<int, Exception>> getEmergencyReportsCount();
 }
 
 /// Result type for handling success and failure cases.
