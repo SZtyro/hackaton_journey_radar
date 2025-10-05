@@ -1031,4 +1031,1177 @@ class RepositoryImpl implements Repository {
       return Failure(exception);
     }
   }
+
+  // GTFS Agencies operations
+  @override
+  Future<Result<List<GtfsAgencyEntity>, Exception>> getGtfsAgencies() async {
+    if (useMockApi) {
+      try {
+        // Mock implementation - return empty list
+        return const Success([]);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsAgencies();
+        final agencies = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(agencies);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsAgencyEntity, Exception>> getGtfsAgency({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsAgency(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsAgencyEntity, Exception>> createGtfsAgency({
+    required GtfsAgencyEntity agency,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsAgencyDto.fromEntity(agency);
+        final response = await api!.createGtfsAgency(agency: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsAgencyEntity, Exception>> updateGtfsAgency({
+    required String id,
+    required GtfsAgencyEntity agency,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsAgencyDto.fromEntity(agency);
+        final response = await api!.updateGtfsAgency(id: id, agency: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteGtfsAgency({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteGtfsAgency(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getGtfsAgenciesCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsAgenciesCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  // Additional GTFS Routes operations
+  @override
+  Future<Result<GtfsRouteEntity, Exception>> getGtfsRoute({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsRoute(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsRouteEntity, Exception>> createGtfsRoute({
+    required GtfsRouteEntity route,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsRouteDto.fromEntity(route);
+        final response = await api!.createGtfsRoute(route: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsRouteEntity, Exception>> updateGtfsRoute({
+    required String id,
+    required GtfsRouteEntity route,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsRouteDto.fromEntity(route);
+        final response = await api!.updateGtfsRoute(id: id, route: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteGtfsRoute({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteGtfsRoute(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getGtfsRoutesCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsRoutesCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsRouteEntity>, Exception>> getGtfsRoutesByType({
+    required int routeType,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsRoutesByType(routeType: routeType);
+        final routes = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(routes);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsRouteEntity>, Exception>> getGtfsRoutesByAgency({
+    required String agencyId,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsRoutesByAgency(agencyId: agencyId);
+        final routes = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(routes);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  // Additional GTFS Stops operations
+  @override
+  Future<Result<GtfsStopEntity, Exception>> getGtfsStop({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsStop(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsStopEntity, Exception>> createGtfsStop({
+    required GtfsStopEntity stop,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsStopDto.fromEntity(stop);
+        final response = await api!.createGtfsStop(stop: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsStopEntity, Exception>> updateGtfsStop({
+    required String id,
+    required GtfsStopEntity stop,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsStopDto.fromEntity(stop);
+        final response = await api!.updateGtfsStop(id: id, stop: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteGtfsStop({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteGtfsStop(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getGtfsStopsCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsStopsCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsStopEntity>, Exception>> getGtfsStopsByZone({
+    required String zoneId,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsStopsByZone(zoneId: zoneId);
+        final stops = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(stops);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsStopEntity>, Exception>>
+      getGtfsAccessibleStops() async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsAccessibleStops();
+        final stops = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(stops);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  // GTFS Trips operations
+  @override
+  Future<Result<List<GtfsTripEntity>, Exception>> getGtfsTrips() async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsTrips();
+        final trips = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(trips);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsTripEntity, Exception>> getGtfsTrip({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsTrip(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsTripEntity, Exception>> createGtfsTrip({
+    required GtfsTripEntity trip,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsTripDto.fromEntity(trip);
+        final response = await api!.createGtfsTrip(trip: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsTripEntity, Exception>> updateGtfsTrip({
+    required String id,
+    required GtfsTripEntity trip,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsTripDto.fromEntity(trip);
+        final response = await api!.updateGtfsTrip(id: id, trip: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteGtfsTrip({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteGtfsTrip(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getGtfsTripsCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsTripsCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsTripEntity>, Exception>> getGtfsTripsByService({
+    required String serviceId,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsTripsByService(serviceId: serviceId);
+        final trips = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(trips);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsTripEntity>, Exception>> getGtfsTripsByRoute({
+    required String routeId,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsTripsByRoute(routeId: routeId);
+        final trips = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(trips);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsTripEntity>, Exception>>
+      getGtfsTripsByRouteAndDirection({
+    required String routeId,
+    required int directionId,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsTripsByRouteAndDirection(
+          routeId: routeId,
+          directionId: directionId,
+        );
+        final trips = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(trips);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  // GTFS Stop Times operations
+  @override
+  Future<Result<List<GtfsStopTimeEntity>, Exception>> getGtfsStopTimes() async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsStopTimes();
+        final stopTimes = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(stopTimes);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsStopTimeEntity, Exception>> getGtfsStopTime({
+    required int id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsStopTime(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsStopTimeEntity, Exception>> createGtfsStopTime({
+    required GtfsStopTimeEntity stopTime,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsStopTimeDto.fromEntity(stopTime);
+        final response = await api!.createGtfsStopTime(stopTime: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsStopTimeEntity, Exception>> updateGtfsStopTime({
+    required int id,
+    required GtfsStopTimeEntity stopTime,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsStopTimeDto.fromEntity(stopTime);
+        final response = await api!.updateGtfsStopTime(id: id, stopTime: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteGtfsStopTime({
+    required int id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteGtfsStopTime(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getGtfsStopTimesCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsStopTimesCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsStopTimeEntity>, Exception>> getGtfsStopTimesByTrip({
+    required String tripId,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsStopTimesByTrip(tripId: tripId);
+        final stopTimes = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(stopTimes);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsStopTimeEntity>, Exception>> getGtfsStopTimesByStop({
+    required String stopId,
+  }) async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsStopTimesByStop(stopId: stopId);
+        final stopTimes = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(stopTimes);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  // Additional GTFS Shapes operations
+  @override
+  Future<Result<GtfsShapeEntity, Exception>> getGtfsShape({
+    required int id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsShape(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsShapeEntity, Exception>> createGtfsShape({
+    required GtfsShapeEntity shape,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsShapeDto.fromEntity(shape);
+        final response = await api!.createGtfsShape(shape: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsShapeEntity, Exception>> updateGtfsShape({
+    required int id,
+    required GtfsShapeEntity shape,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsShapeDto.fromEntity(shape);
+        final response = await api!.updateGtfsShape(id: id, shape: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteGtfsShape({
+    required int id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteGtfsShape(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getGtfsShapesCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsShapesCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  // GTFS Calendar operations
+  @override
+  Future<Result<List<GtfsCalendarEntity>, Exception>> getGtfsCalendars() async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsCalendars();
+        final calendars = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(calendars);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsCalendarEntity, Exception>> getGtfsCalendar({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsCalendar(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsCalendarEntity, Exception>> createGtfsCalendar({
+    required GtfsCalendarEntity calendar,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsCalendarDto.fromEntity(calendar);
+        final response = await api!.createGtfsCalendar(calendar: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsCalendarEntity, Exception>> updateGtfsCalendar({
+    required String id,
+    required GtfsCalendarEntity calendar,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsCalendarDto.fromEntity(calendar);
+        final response = await api!.updateGtfsCalendar(id: id, calendar: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteGtfsCalendar({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteGtfsCalendar(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getGtfsCalendarsCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsCalendarsCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  // GTFS Calendar Dates operations
+  @override
+  Future<Result<List<GtfsCalendarDatesEntity>, Exception>>
+      getGtfsCalendarDates() async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsCalendarDates();
+        final calendarDates =
+            response.data.map((dto) => dto.toEntity()).toList();
+        return Success(calendarDates);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsCalendarDatesEntity, Exception>> getGtfsCalendarDate({
+    required int id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsCalendarDate(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsCalendarDatesEntity, Exception>> createGtfsCalendarDate({
+    required GtfsCalendarDatesEntity calendarDate,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsCalendarDatesDto.fromEntity(calendarDate);
+        final response = await api!.createGtfsCalendarDate(calendarDate: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsCalendarDatesEntity, Exception>> updateGtfsCalendarDate({
+    required int id,
+    required GtfsCalendarDatesEntity calendarDate,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsCalendarDatesDto.fromEntity(calendarDate);
+        final response =
+            await api!.updateGtfsCalendarDate(id: id, calendarDate: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteGtfsCalendarDate({
+    required int id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteGtfsCalendarDate(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getGtfsCalendarDatesCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsCalendarDatesCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  // GTFS Blocks operations
+  @override
+  Future<Result<List<GtfsBlockEntity>, Exception>> getGtfsBlocks() async {
+    if (useMockApi) {
+      return const Success([]);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsBlocks();
+        final blocks = response.data.map((dto) => dto.toEntity()).toList();
+        return Success(blocks);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsBlockEntity, Exception>> getGtfsBlock({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsBlock(id: id);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsBlockEntity, Exception>> createGtfsBlock({
+    required GtfsBlockEntity block,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsBlockDto.fromEntity(block);
+        final response = await api!.createGtfsBlock(block: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<GtfsBlockEntity, Exception>> updateGtfsBlock({
+    required String id,
+    required GtfsBlockEntity block,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final dto = GtfsBlockDto.fromEntity(block);
+        final response = await api!.updateGtfsBlock(id: id, block: dto);
+        return Success(response.data.toEntity());
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteGtfsBlock({
+    required String id,
+  }) async {
+    if (useMockApi) {
+      return Failure(Exception('Not implemented in mock API'));
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        await api!.deleteGtfsBlock(id: id);
+        return const Success(null);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
+
+  @override
+  Future<Result<int, Exception>> getGtfsBlocksCount() async {
+    if (useMockApi) {
+      return const Success(0);
+    } else {
+      try {
+        if (api == null) {
+          return Failure(Exception('API instance not available'));
+        }
+        final response = await api!.getGtfsBlocksCount();
+        return Success(response.data);
+      } on Exception catch (exception) {
+        return Failure(exception);
+      }
+    }
+  }
 }
