@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:journey_radar_mobile/app_ui/app_scaffold.dart';
 import 'package:journey_radar_mobile/app_ui/app_spacing.dart';
 import 'package:journey_radar_mobile/app_ui/font_constants.dart';
@@ -9,14 +10,49 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 enum IncidentType {
+  accident('Wypadek'),
+  laneClosure('Zamknięcie pasa'),
   vehicleBreakdown('Awaria pojazdu'),
-  networkFailure('Awaria sieci'),
   collision('Kolizja'),
   pedestrianAccident('Wypadek z pieszymi na torach'),
   other('Inne');
 
   const IncidentType(this.displayName);
   final String displayName;
+
+  IconData get icon {
+    switch (this) {
+      case IncidentType.accident:
+        return Icons.car_crash;
+      case IncidentType.laneClosure:
+        return Icons.block;
+      case IncidentType.vehicleBreakdown:
+        return Icons.build_circle; // Better icon for mechanical issues
+      case IncidentType.collision:
+        return Icons.car_repair;
+      case IncidentType.pedestrianAccident:
+        return Icons.person_pin_circle;
+      case IncidentType.other:
+        return Icons.more_horiz;
+    }
+  }
+
+  Color get backgroundColor {
+    switch (this) {
+      case IncidentType.accident:
+        return Colors.red;
+      case IncidentType.collision:
+        return Colors.pink;
+      case IncidentType.pedestrianAccident:
+        return Colors.deepOrange;
+      case IncidentType.laneClosure:
+        return Colors.amber;
+      case IncidentType.vehicleBreakdown:
+        return Colors.teal;
+      case IncidentType.other:
+        return Colors.blueGrey;
+    }
+  }
 }
 
 class IncidentReportingPage extends StatefulWidget {
@@ -31,6 +67,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
   final firebaseApi = getIt<FirebasePushNotificationService>();
+  final MapController _mapController = MapController();
 
   IncidentType? _selectedIncidentType;
   String? _selectedRoute;
@@ -40,8 +77,11 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
 
   // GPS Location variables
   LatLng? _currentLocation;
+  LatLng? _incidentLocation; // Location selected on map for incident
   bool _isGettingLocation = false;
   String? _locationError;
+  bool _hasAutoFetchedLocation =
+      false; // Flag to track if we've auto-fetched location
 
   // Mock data for routes and stations
   final List<String> _routes = [
@@ -66,6 +106,24 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Don't automatically fetch location on init - wait for user interaction
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Auto-fetch GPS location when page becomes visible (but only once)
+    if (!_hasAutoFetchedLocation &&
+        !_isGettingLocation &&
+        _currentLocation == null) {
+      _hasAutoFetchedLocation = true;
+      _getCurrentLocation();
+    }
+  }
+
+  @override
   void dispose() {
     _descriptionController.dispose();
     _locationController.dispose();
@@ -88,7 +146,8 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
     }
 
     // Check if location is provided (either GPS or manual)
-    if (_currentLocation == null && (_locationController.text.trim().isEmpty)) {
+    if (_incidentLocation == null &&
+        (_locationController.text.trim().isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Proszę podać lokalizację lub pobrać ją z GPS'),
@@ -108,8 +167,8 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
         'type': _selectedIncidentType!.name,
         'typeDisplayName': _selectedIncidentType!.displayName,
         'description': _descriptionController.text,
-        'location': _currentLocation != null
-            ? 'GPS: ${_currentLocation!.latitude.toStringAsFixed(6)}, ${_currentLocation!.longitude.toStringAsFixed(6)}'
+        'location': _incidentLocation != null
+            ? 'GPS: ${_incidentLocation!.latitude.toStringAsFixed(6)}, ${_incidentLocation!.longitude.toStringAsFixed(6)}'
             : _locationController.text,
         'route': _selectedRoute,
         'station': _selectedStation,
@@ -117,10 +176,10 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
         'timestamp': DateTime.now().toIso8601String(),
         'reporterId': 'user_123', // Mock user ID
         'status': 'reported',
-        'gpsCoordinates': _currentLocation != null
+        'gpsCoordinates': _incidentLocation != null
             ? {
-                'latitude': _currentLocation!.latitude,
-                'longitude': _currentLocation!.longitude,
+                'latitude': _incidentLocation!.latitude,
+                'longitude': _incidentLocation!.longitude,
               }
             : null,
       };
@@ -150,7 +209,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
         _resetForm();
       }
     } catch (e) {
-      logD('Error submitting incident: $e');
+      logE('Error submitting incident: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -191,7 +250,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
 
       logD('Incident notification sent successfully for route: $routeId');
     } catch (e) {
-      logD('Error sending incident notification: $e');
+      logE('Error sending incident notification: $e');
       // Don't rethrow here to avoid breaking the form submission
     }
   }
@@ -256,13 +315,22 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
 
       setState(() {
         _currentLocation = LatLng(position.latitude, position.longitude);
+        _incidentLocation = LatLng(position.latitude,
+            position.longitude); // Set incident location to current location
         _isGettingLocation = false;
         _locationError = null;
       });
 
+      // Move map to current location after the widget is built
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _moveMapToCurrentLocation();
+        });
+      }
+
       logD('Current location: ${position.latitude}, ${position.longitude}');
     } catch (e) {
-      logD('Error getting location: $e');
+      logE('Error getting location: $e');
       setState(() {
         _locationError = 'Błąd podczas pobierania lokalizacji: ${e.toString()}';
         _isGettingLocation = false;
@@ -273,8 +341,26 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   void _clearLocation() {
     setState(() {
       _currentLocation = null;
+      _incidentLocation = null;
       _locationError = null;
     });
+  }
+
+  void _onMapTap(TapPosition tapPosition, LatLng point) {
+    setState(() {
+      _incidentLocation = point;
+    });
+    logD('Incident location updated to: ${point.latitude}, ${point.longitude}');
+  }
+
+  void _moveMapToCurrentLocation() {
+    if (_currentLocation != null && mounted) {
+      try {
+        _mapController.move(_currentLocation!, 15.0);
+      } catch (e) {
+        logE('Error moving map: $e');
+      }
+    }
   }
 
   void _resetForm() {
@@ -287,7 +373,9 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
       _selectedStation = null;
       _isEmergency = false;
       _currentLocation = null;
+      _incidentLocation = null;
       _locationError = null;
+      _hasAutoFetchedLocation = false; // Reset flag so GPS can be fetched again
     });
   }
 
@@ -337,56 +425,81 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: AppSpacing.xs),
-                      ...IncidentType.values
-                          .map((type) => RadioListTile<IncidentType>(
-                                title: Text(type.displayName),
-                                value: type,
-                                groupValue: _selectedIncidentType,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedIncidentType = value;
-                                  });
-                                },
-                              )),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: AppSpacing.m),
-
-              // Route selection
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.m),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Trasa',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      SizedBox(height: AppSpacing.m),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 1.2,
+                          crossAxisSpacing: AppSpacing.ms,
+                          mainAxisSpacing: AppSpacing.ms,
                         ),
-                      ),
-                      SizedBox(height: AppSpacing.xs),
-                      DropdownButtonFormField<String>(
-                        value: _selectedRoute,
-                        decoration: const InputDecoration(
-                          hintText: 'Wybierz trasę',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: _routes
-                            .map((route) => DropdownMenuItem(
-                                  value: route,
-                                  child: Text(route),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedRoute = value;
-                          });
+                        itemCount: IncidentType.values.length,
+                        itemBuilder: (context, index) {
+                          final type = IncidentType.values[index];
+                          final isSelected = _selectedIncidentType == type;
+
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedIncidentType = type;
+                              });
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? type.backgroundColor.withOpacity(0.12)
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest, // MD3 surface color
+                                borderRadius:
+                                    BorderRadius.circular(AppSpacing.ms),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? type.backgroundColor
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .outline
+                                          .withOpacity(
+                                              0.3), // MD3 outline color
+                                  width: isSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      color: type.backgroundColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      type.icon,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                                  ),
+                                  SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    type.displayName,
+                                    style: TextStyle(
+                                      fontSize: FontConstants.fontSizeXS,
+                                      fontWeight: FontWeight.w500,
+                                      color: isSelected
+                                          ? type.backgroundColor
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onSurface, // MD3 on-surface color
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
                         },
                       ),
                     ],
@@ -396,271 +509,427 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
 
               SizedBox(height: AppSpacing.m),
 
-              // Station selection
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.m),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Stacja',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+              // Show rest of form only after incident type is selected
+              if (_selectedIncidentType != null) ...[
+                // Route selection
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.m),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Trasa',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: AppSpacing.xs),
-                      DropdownButtonFormField<String>(
-                        value: _selectedStation,
-                        decoration: const InputDecoration(
-                          hintText: 'Wybierz stację',
-                          border: OutlineInputBorder(),
+                        SizedBox(height: AppSpacing.xs),
+                        DropdownButtonFormField<String>(
+                          value: _selectedRoute,
+                          decoration: const InputDecoration(
+                            hintText: 'Wybierz trasę',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: _routes
+                              .map((route) => DropdownMenuItem(
+                                    value: route,
+                                    child: Text(route),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedRoute = value;
+                            });
+                          },
                         ),
-                        items: _stations
-                            .map((station) => DropdownMenuItem(
-                                  value: station,
-                                  child: Text(station),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedStation = value;
-                          });
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              SizedBox(height: AppSpacing.m),
+                SizedBox(height: AppSpacing.m),
 
-              // Location section - always visible
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.m),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
+                // Station selection
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.m),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Stacja',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: AppSpacing.xs),
+                        DropdownButtonFormField<String>(
+                          value: _selectedStation,
+                          decoration: const InputDecoration(
+                            hintText: 'Wybierz stację',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: _stations
+                              .map((station) => DropdownMenuItem(
+                                    value: station,
+                                    child: Text(station),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedStation = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: AppSpacing.m),
+
+                // Location section - always visible
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.m),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _currentLocation != null
+                                  ? 'Lokalizacja incydentu'
+                                  : 'Lokalizacja *',
+                              style: TextStyle(
+                                fontSize: FontConstants.fontSizeM,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: AppSpacing.xs),
+                            ElevatedButton.icon(
+                              onPressed: _isGettingLocation
+                                  ? null
+                                  : _getCurrentLocation,
+                              icon: _isGettingLocation
+                                  ? SizedBox(
+                                      width: AppSpacing.m,
+                                      height: AppSpacing.m,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.my_location),
+                              label: Text(_isGettingLocation
+                                  ? 'Pobieranie...'
+                                  : 'Odśwież GPS'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.ms,
+                                  vertical: AppSpacing.xxs,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: AppSpacing.xs),
+
+                        // Manual location text field - only show if no GPS location
+                        if (_currentLocation == null)
+                          TextFormField(
+                            controller: _locationController,
+                            decoration: const InputDecoration(
+                              hintText: 'Opisz dokładną lokalizację incydentu',
+                              border: OutlineInputBorder(),
+                            ),
+                            maxLines: 2,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Proszę podać lokalizację';
+                              }
+                              return null;
+                            },
+                          ),
+
+                        // Display mini map with incident location
+                        if (_currentLocation != null) ...[
+                          SizedBox(height: AppSpacing.ms),
+                          Container(
+                            height: 200,
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.xs),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.xs),
+                              child: FlutterMap(
+                                mapController: _mapController,
+                                options: MapOptions(
+                                  initialCenter: const LatLng(
+                                      50.0647, 19.9450), // Krakow center
+                                  initialZoom: 15.0,
+                                  minZoom: 10.0,
+                                  maxZoom: 18.0,
+                                  interactionOptions: const InteractionOptions(
+                                    flags: InteractiveFlag.all,
+                                  ),
+                                  onTap: _onMapTap,
+                                ),
+                                children: [
+                                  TileLayer(
+                                    urlTemplate:
+                                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    userAgentPackageName:
+                                        'com.journey_radar_mobile.app',
+                                    maxZoom: 18,
+                                    subdomains: const ['a', 'b', 'c'],
+                                  ),
+                                  // Current user location marker
+                                  MarkerLayer(
+                                    markers: [
+                                      Marker(
+                                        point: _currentLocation!,
+                                        width: 20,
+                                        height: 20,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                                color: Colors.white, width: 2),
+                                          ),
+                                          child: const Icon(
+                                            Icons.person,
+                                            color: Colors.white,
+                                            size: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  // Incident location marker
+                                  if (_incidentLocation != null)
+                                    MarkerLayer(
+                                      markers: [
+                                        Marker(
+                                          point: _incidentLocation!,
+                                          width: 30,
+                                          height: 30,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 3),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.red
+                                                      .withOpacity(0.3),
+                                                  blurRadius: 6,
+                                                  spreadRadius: 2,
+                                                ),
+                                              ],
+                                            ),
+                                            child: const Icon(
+                                              Icons.location_on,
+                                              color: Colors.white,
+                                              size: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: AppSpacing.xs),
+                          Row(
+                            children: [
+                              Icon(Icons.my_location,
+                                  color: Colors.blue, size: 16),
+                              SizedBox(width: AppSpacing.xs),
+                              Text(
+                                'Twoja lokalizacja',
+                                style: TextStyle(
+                                  fontSize: FontConstants.fontSizeXS,
+                                  color: Colors.blue.shade700,
+                                ),
+                              ),
+                              SizedBox(width: AppSpacing.m),
+                              Icon(Icons.location_on,
+                                  color: Colors.red, size: 16),
+                              SizedBox(width: AppSpacing.xs),
+                              Text(
+                                'Lokalizacja incydentu',
+                                style: TextStyle(
+                                  fontSize: FontConstants.fontSizeXS,
+                                  color: Colors.red.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: AppSpacing.xs),
                           Text(
-                            _currentLocation != null
-                                ? 'Lokalizacja GPS'
-                                : 'Lokalizacja *',
+                            'Kliknij na mapie, aby zmienić lokalizację incydentu',
+                            style: TextStyle(
+                              fontSize: FontConstants.fontSizeXS,
+                              color: Colors.grey.shade600,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+
+                        // Display error message
+                        if (_locationError != null) ...[
+                          SizedBox(height: AppSpacing.ms),
+                          Container(
+                            padding: EdgeInsets.all(AppSpacing.ms),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.xs),
+                              border: Border.all(color: Colors.red.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline,
+                                    color: Colors.red.shade700,
+                                    size: AppSpacing.m + AppSpacing.xxs),
+                                SizedBox(width: AppSpacing.xs),
+                                Expanded(
+                                  child: Text(
+                                    _locationError!,
+                                    style:
+                                        TextStyle(color: Colors.red.shade700),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: AppSpacing.m),
+
+                // Description
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.m),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Opis incydentu *',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: AppSpacing.xs),
+                        TextFormField(
+                          controller: _descriptionController,
+                          decoration: const InputDecoration(
+                            hintText: 'Opisz szczegóły incydentu',
+                            border: OutlineInputBorder(),
+                          ),
+                          maxLines: 4,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Proszę podać opis incydentu';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: AppSpacing.l),
+
+                // Submit button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitIncident,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isEmergency
+                          ? Colors.red
+                          : Theme.of(context).secondaryHeaderColor,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: AppSpacing.m),
+                    ),
+                    child: _isSubmitting
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: AppSpacing.m + AppSpacing.xxs,
+                                height: AppSpacing.m + AppSpacing.xxs,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              ),
+                              SizedBox(width: AppSpacing.ms),
+                              Text('Zgłaszanie...'),
+                            ],
+                          )
+                        : Text(
+                            _isEmergency
+                                ? 'ZGŁOŚ PILNY INCYIDENT'
+                                : 'Zgłoś incydent',
                             style: TextStyle(
                               fontSize: FontConstants.fontSizeM,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          ElevatedButton.icon(
-                            onPressed:
-                                _isGettingLocation ? null : _getCurrentLocation,
-                            icon: _isGettingLocation
-                                ? SizedBox(
-                                    width: AppSpacing.m,
-                                    height: AppSpacing.m,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.my_location),
-                            label: Text(
-                                _isGettingLocation ? 'Pobieranie...' : 'GPS'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.ms,
-                                  vertical: AppSpacing.xxs),
-                              minimumSize: Size(0, AppSpacing.xxxl),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppSpacing.xs),
+                  ),
+                ),
 
-                      // Manual location text field - only show if no GPS location
-                      if (_currentLocation == null)
-                        TextFormField(
-                          controller: _locationController,
-                          decoration: const InputDecoration(
-                            hintText: 'Opisz dokładną lokalizację incydentu',
-                            border: OutlineInputBorder(),
-                          ),
-                          maxLines: 2,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Proszę podać lokalizację';
-                            }
-                            return null;
-                          },
+                SizedBox(height: AppSpacing.m),
+
+                // Info card
+                Card(
+                  color: Colors.blue.shade50,
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.m),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: Colors.blue.shade700,
                         ),
-
-                      // Display current GPS location
-                      if (_currentLocation != null) ...[
-                        Container(
-                          padding: EdgeInsets.all(AppSpacing.ms),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
-                            borderRadius: BorderRadius.circular(AppSpacing.xs),
-                            border: Border.all(color: Colors.green.shade200),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Szerokość: ${_currentLocation!.latitude.toStringAsFixed(6)}°',
-                                style: TextStyle(color: Colors.green.shade700),
-                              ),
-                              Text(
-                                'Długość: ${_currentLocation!.longitude.toStringAsFixed(6)}°',
-                                style: TextStyle(color: Colors.green.shade700),
-                              ),
-                            ],
+                        SizedBox(width: AppSpacing.ms),
+                        Expanded(
+                          child: Text(
+                            'Po zgłoszeniu incydentu, powiadomienia zostaną wysłane do wszystkich użytkowników na tej trasie.',
+                            style: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontSize: FontConstants.fontSizeXS,
+                            ),
                           ),
                         ),
                       ],
-
-                      // Display error message
-                      if (_locationError != null) ...[
-                        SizedBox(height: AppSpacing.ms),
-                        Container(
-                          padding: EdgeInsets.all(AppSpacing.ms),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(AppSpacing.xs),
-                            border: Border.all(color: Colors.red.shade200),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error_outline,
-                                  color: Colors.red.shade700,
-                                  size: AppSpacing.m + AppSpacing.xxs),
-                              SizedBox(width: AppSpacing.xs),
-                              Expanded(
-                                child: Text(
-                                  _locationError!,
-                                  style: TextStyle(color: Colors.red.shade700),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-
-              SizedBox(height: AppSpacing.m),
-
-              // Description
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.m),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Opis incydentu *',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: AppSpacing.xs),
-                      TextFormField(
-                        controller: _descriptionController,
-                        decoration: const InputDecoration(
-                          hintText: 'Opisz szczegóły incydentu',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 4,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Proszę podać opis incydentu';
-                          }
-                          return null;
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: AppSpacing.l),
-
-              // Submit button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submitIncident,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isEmergency
-                        ? Colors.red
-                        : Theme.of(context).secondaryHeaderColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: AppSpacing.m),
-                  ),
-                  child: _isSubmitting
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: AppSpacing.m + AppSpacing.xxs,
-                              height: AppSpacing.m + AppSpacing.xxs,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            ),
-                            SizedBox(width: AppSpacing.ms),
-                            Text('Zgłaszanie...'),
-                          ],
-                        )
-                      : Text(
-                          _isEmergency
-                              ? 'ZGŁOŚ PILNY INCYIDENT'
-                              : 'Zgłoś incydent',
-                          style: TextStyle(
-                            fontSize: FontConstants.fontSizeM,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ),
-
-              SizedBox(height: AppSpacing.m),
-
-              // Info card
-              Card(
-                color: Colors.blue.shade50,
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.m),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Colors.blue.shade700,
-                      ),
-                      SizedBox(width: AppSpacing.ms),
-                      Expanded(
-                        child: Text(
-                          'Po zgłoszeniu incydentu, powiadomienia zostaną wysłane do wszystkich użytkowników na tej trasie.',
-                          style: TextStyle(
-                            color: Colors.blue.shade700,
-                            fontSize: FontConstants.fontSizeXS,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              ],
             ],
           ),
         ),
