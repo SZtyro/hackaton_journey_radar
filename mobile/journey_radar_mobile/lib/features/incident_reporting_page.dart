@@ -356,8 +356,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   void _moveMapToCurrentLocation() {
     if (_currentLocation != null && mounted) {
       try {
-        // Przybliż mapę bardziej do lokalizacji użytkownika
-        _mapController.move(_currentLocation!, 18.0); // Zwiększony zoom level
+        _mapController.move(_currentLocation!, 18.0);
       } catch (e) {
         logE('Error moving map: $e');
       }
@@ -676,8 +675,8 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
                                 mapController: _mapController,
                                 options: MapOptions(
                                   initialCenter: _currentLocation ??
-                                      const LatLng(50.0647,
-                                          19.9450), // Twoja lokalizacja lub Kraków jako fallback
+                                      const LatLng(00.0000,
+                                          00.0000), // Twoja lokalizacja lub Kraków jako fallback
                                   initialZoom: _currentLocation != null
                                       ? 18.0
                                       : 15.0, // Wyższy zoom jeśli masz GPS
