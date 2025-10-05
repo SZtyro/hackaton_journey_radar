@@ -456,4 +456,204 @@ public class VehiclePositionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    /**
+     * Retrieves vehicle positions within a specified radius from user coordinates.
+     * Returns real-time location data filtered by distance from the specified point.
+     *
+     * @param latitude User's latitude coordinate
+     * @param longitude User's longitude coordinate
+     * @param radiusKm Radius in kilometers to search within
+     * @return ResponseEntity containing list of vehicle positions within the specified radius
+     */
+    @GetMapping("/positions/nearby")
+    @Operation(
+        summary = "Get vehicle positions within radius",
+        description = "Retrieves real-time positions of public transit vehicles within a specified radius " +
+                     "from the provided coordinates. Useful for finding nearby vehicles and transit options. " +
+                     "Distance calculation uses the Haversine formula for accurate geographic distances."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved nearby vehicle positions",
+            content = @Content(
+                schema = @Schema(
+                    type = "array",
+                    example = """
+                        [
+                          {
+                            "vehicleId": "M:401",
+                            "tripId": "30876679_256163",
+                            "latitude": 50.0647,
+                            "longitude": 19.9450
+                          }
+                        ]
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid coordinates or radius parameters"
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error - failed to fetch vehicle data"
+        )
+    })
+    public ResponseEntity<List<SimpleVehiclePosition>> getNearbyVehiclePositions(
+        @Parameter(description = "User's latitude coordinate", example = "50.0647")
+        @RequestParam double latitude,
+        @Parameter(description = "User's longitude coordinate", example = "19.9450")
+        @RequestParam double longitude,
+        @Parameter(description = "Search radius in kilometers", example = "2.0")
+        @RequestParam double radiusKm
+    ) {
+        try {
+            // Validate parameters
+            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+                return ResponseEntity.badRequest().build();
+            }
+            if (radiusKm <= 0 || radiusKm > 100) { // Max 100km radius
+                return ResponseEntity.badRequest().build();
+            }
+
+            log.info("Fetching vehicle positions within {}km of coordinates ({}, {})", radiusKm, latitude, longitude);
+            List<SimpleVehiclePosition> allPositions = gtfsRealTimeService.fetchVehiclePositions();
+
+            List<SimpleVehiclePosition> nearbyPositions = allPositions.stream()
+                    .filter(position -> calculateDistance(latitude, longitude, position.latitude(), position.longitude()) <= radiusKm)
+                    .collect(Collectors.toList());
+
+            log.info("Found {} nearby vehicles out of {} total within {}km radius", nearbyPositions.size(), allPositions.size(), radiusKm);
+            return ResponseEntity.ok(nearbyPositions);
+
+        } catch (IOException e) {
+            log.error("Failed to fetch nearby vehicle positions due to I/O error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching nearby vehicle positions", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Retrieves delayed trips within a specified radius from user coordinates.
+     * Returns delay information filtered by distance and delay status.
+     *
+     * @param latitude User's latitude coordinate
+     * @param longitude User's longitude coordinate
+     * @param radiusKm Radius in kilometers to search within
+     * @return ResponseEntity containing list of delayed trips within the specified radius
+     */
+    @GetMapping("/delays/nearby")
+    @Operation(
+        summary = "Get delayed trips within radius",
+        description = "Retrieves significantly delayed trips within a specified radius from the provided coordinates. " +
+                     "Combines delay filtering (>5 minutes) with geographic proximity to show relevant delays. " +
+                     "Useful for passengers to see delays affecting their immediate area."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved nearby delayed trips",
+            content = @Content(
+                schema = @Schema(
+                    type = "array",
+                    example = """
+                        [
+                          {
+                            "tripId": "30876679_256163",
+                            "routeId": "160013",
+                            "vehicleId": "M:401",
+                            "delay": 420,
+                            "scheduleRelationship": "SCHEDULED"
+                          }
+                        ]
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid coordinates or radius parameters"
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error - failed to fetch delay data"
+        )
+    })
+    public ResponseEntity<List<SimpleTripUpdate>> getNearbyDelayedTrips(
+        @Parameter(description = "User's latitude coordinate", example = "50.0647")
+        @RequestParam double latitude,
+        @Parameter(description = "User's longitude coordinate", example = "19.9450")
+        @RequestParam double longitude,
+        @Parameter(description = "Search radius in kilometers", example = "2.0")
+        @RequestParam double radiusKm
+    ) {
+        try {
+            // Validate parameters
+            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+                return ResponseEntity.badRequest().build();
+            }
+            if (radiusKm <= 0 || radiusKm > 100) { // Max 100km radius
+                return ResponseEntity.badRequest().build();
+            }
+
+            log.info("Fetching delayed trips within {}km of coordinates ({}, {})", radiusKm, latitude, longitude);
+
+            // Get all trip updates and vehicle positions
+            List<SimpleTripUpdate> allTripUpdates = gtfsRealTimeService.fetchTripUpdates();
+            List<SimpleVehiclePosition> allPositions = gtfsRealTimeService.fetchVehiclePositions();
+
+            // Filter for significantly delayed trips and match with nearby vehicle positions
+            List<SimpleTripUpdate> nearbyDelayedTrips = allTripUpdates.stream()
+                    .filter(SimpleTripUpdate::isSignificantlyDelayed)
+                    .filter(tripUpdate -> {
+                        // Find corresponding vehicle position for this trip
+                        return allPositions.stream()
+                                .filter(position -> tripUpdate.tripId().equals(position.tripId()) ||
+                                                  (tripUpdate.vehicleId() != null && tripUpdate.vehicleId().equals(position.vehicleId())))
+                                .anyMatch(position -> calculateDistance(latitude, longitude, position.latitude(), position.longitude()) <= radiusKm);
+                    })
+                    .collect(Collectors.toList());
+
+            log.info("Found {} nearby delayed trips within {}km radius", nearbyDelayedTrips.size(), radiusKm);
+            return ResponseEntity.ok(nearbyDelayedTrips);
+
+        } catch (IOException e) {
+            log.error("Failed to fetch nearby delayed trips due to I/O error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching nearby delayed trips", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Calculates the distance between two geographic coordinates using the Haversine formula.
+     *
+     * @param lat1 Latitude of first point
+     * @param lon1 Longitude of first point
+     * @param lat2 Latitude of second point
+     * @param lon2 Longitude of second point
+     * @return Distance in kilometers
+     */
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int EARTH_RADIUS_KM = 6371;
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS_KM * c;
+    }
 }
