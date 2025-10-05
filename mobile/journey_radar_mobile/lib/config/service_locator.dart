@@ -143,8 +143,7 @@ Future<void> setUpServiceLocator() async {
   getIt.registerLazySingleton<Api>(
     () => Api(
       dio: dio,
-      baseUrl:
-          AppConstants.baseUrl,
+      baseUrl: AppConstants.baseUrl,
     ),
   );
 

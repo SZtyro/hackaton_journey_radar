@@ -41,9 +41,11 @@ class SettingsContent extends StatelessWidget {
               Card(
                 child: Padding(
                   padding: EdgeInsets.all(AppSpacing.m),
+
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      SizedBox(width: double.maxFinite),
                       Text(
                         'Tryb motywu',
                         style: TextStyle(
@@ -168,32 +170,6 @@ class SettingsContent extends StatelessWidget {
               ),
 
               SizedBox(height: AppSpacing.m),
-
-              // Theme Information Card
-              Card(
-                color: Colors.blue.shade50,
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.m),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Colors.blue.shade700,
-                      ),
-                      SizedBox(width: AppSpacing.ms),
-                      Expanded(
-                        child: Text(
-                          'Zmiany motywu są zapisywane automatycznie i będą widoczne w całej aplikacji.',
-                          style: TextStyle(
-                            color: Colors.blue.shade700,
-                            fontSize: FontConstants.fontSizeXS,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
         );

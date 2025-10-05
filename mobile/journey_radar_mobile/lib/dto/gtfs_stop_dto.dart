@@ -7,22 +7,22 @@ part 'gtfs_stop_dto.g.dart';
 @JsonSerializable()
 class GtfsStopDto {
   @JsonKey(name: 'stop_id')
-  final String stopId;
+  final String? stopId;
 
   @JsonKey(name: 'stop_code')
   final String? stopCode;
 
   @JsonKey(name: 'stop_name')
-  final String stopName;
+  final String? stopName;
 
   @JsonKey(name: 'stop_desc')
   final String? stopDesc;
 
   @JsonKey(name: 'stop_lat')
-  final double stopLat;
+  final double? stopLat;
 
   @JsonKey(name: 'stop_lon')
-  final double stopLon;
+  final double? stopLon;
 
   @JsonKey(name: 'zone_id')
   final String? zoneId;
@@ -49,12 +49,12 @@ class GtfsStopDto {
   final String? platformCode;
 
   const GtfsStopDto({
-    required this.stopId,
+    this.stopId,
     this.stopCode,
-    required this.stopName,
+    this.stopName,
     this.stopDesc,
-    required this.stopLat,
-    required this.stopLon,
+    this.stopLat,
+    this.stopLon,
     this.zoneId,
     this.stopUrl,
     this.locationType,
@@ -72,11 +72,13 @@ class GtfsStopDto {
 
   GtfsStopEntity toEntity() {
     return GtfsStopEntity(
-      stopId: stopId,
+      stopId: stopId ?? '',
       stopCode: stopCode,
       stopName: stopName,
       stopDesc: stopDesc,
-      position: LatLng(stopLat, stopLon),
+      position: stopLat != null && stopLon != null
+          ? LatLng(stopLat!, stopLon!)
+          : null,
       zoneId: zoneId,
       stopUrl: stopUrl,
       locationType: locationType,
@@ -94,8 +96,8 @@ class GtfsStopDto {
       stopCode: entity.stopCode,
       stopName: entity.stopName,
       stopDesc: entity.stopDesc,
-      stopLat: entity.position.latitude,
-      stopLon: entity.position.longitude,
+      stopLat: entity.position?.latitude,
+      stopLon: entity.position?.longitude,
       zoneId: entity.zoneId,
       stopUrl: entity.stopUrl,
       locationType: entity.locationType,

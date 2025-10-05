@@ -30,7 +30,9 @@ class MapCubit extends Cubit<MapState> {
     if (state.gtfsRoutes == null) return;
 
     for (final route in state.gtfsRoutes!) {
-      await getGtfsShapes(routeId: route.routeId);
+      if (route.routeId != null) {
+        await getGtfsShapes(routeId: route.routeId!);
+      }
     }
   }
 
@@ -64,7 +66,6 @@ class MapCubit extends Cubit<MapState> {
       ));
     }
   }
-
 
   // GTFS operations
   Future<void> getGtfsRoutes({

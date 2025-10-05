@@ -1,21 +1,21 @@
 import 'package:equatable/equatable.dart';
 
 class GtfsDelayEntity extends Equatable {
-  final String tripId;
-  final String stopId;
-  final int delaySeconds;
-  final String delayType; // 'arrival' or 'departure'
+  final String? tripId;
+  final String? stopId;
+  final int? delaySeconds;
+  final String? delayType; // 'arrival' or 'departure'
   final String? reason;
-  final DateTime createdAt;
+  final DateTime? createdAt;
   final DateTime? updatedAt;
 
   const GtfsDelayEntity({
-    required this.tripId,
-    required this.stopId,
-    required this.delaySeconds,
-    required this.delayType,
+    this.tripId,
+    this.stopId,
+    this.delaySeconds,
+    this.delayType,
     this.reason,
-    required this.createdAt,
+    this.createdAt,
     this.updatedAt,
   });
 

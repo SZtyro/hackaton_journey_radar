@@ -6,7 +6,7 @@ part 'gtfs_route_dto.g.dart';
 @JsonSerializable()
 class GtfsRouteDto {
   @JsonKey(name: 'route_id')
-  final String routeId;
+  final String? routeId;
 
   @JsonKey(name: 'agency_id')
   final String? agencyId;
@@ -21,7 +21,7 @@ class GtfsRouteDto {
   final String? routeDesc;
 
   @JsonKey(name: 'route_type')
-  final int routeType;
+  final int? routeType;
 
   @JsonKey(name: 'route_url')
   final String? routeUrl;
@@ -45,12 +45,12 @@ class GtfsRouteDto {
   final String? networkId;
 
   const GtfsRouteDto({
-    required this.routeId,
+    this.routeId,
     this.agencyId,
     this.routeShortName,
     this.routeLongName,
     this.routeDesc,
-    required this.routeType,
+    this.routeType,
     this.routeUrl,
     this.routeColor,
     this.routeTextColor,
@@ -67,7 +67,7 @@ class GtfsRouteDto {
 
   GtfsRouteEntity toEntity() {
     return GtfsRouteEntity(
-      routeId: routeId,
+      routeId: routeId ?? '',
       agencyId: agencyId,
       routeShortName: routeShortName,
       routeLongName: routeLongName,

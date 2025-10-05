@@ -1,13 +1,13 @@
 import 'package:equatable/equatable.dart';
 
 class GtfsScheduleWithDelaysEntity extends Equatable {
-  final String stopId;
-  final String stopName;
-  final String routeId;
+  final String? stopId;
+  final String? stopName;
+  final String? routeId;
   final String? routeShortName;
   final String? routeLongName;
   final String? routeColor;
-  final String tripId;
+  final String? tripId;
   final String? tripHeadsign;
   final String? scheduledArrivalTime;
   final String? scheduledDepartureTime;
@@ -16,21 +16,21 @@ class GtfsScheduleWithDelaysEntity extends Equatable {
   final int? delaySeconds;
   final String? delayType;
   final String? delayReason;
-  final int stopSequence;
+  final int? stopSequence;
   final int? directionId;
   final int? wheelchairAccessible;
   final int? bikesAllowed;
-  final String serviceId;
-  final bool isRealTime;
+  final String? serviceId;
+  final bool? isRealTime;
 
   const GtfsScheduleWithDelaysEntity({
-    required this.stopId,
-    required this.stopName,
-    required this.routeId,
+    this.stopId,
+    this.stopName,
+    this.routeId,
     this.routeShortName,
     this.routeLongName,
     this.routeColor,
-    required this.tripId,
+    this.tripId,
     this.tripHeadsign,
     this.scheduledArrivalTime,
     this.scheduledDepartureTime,
@@ -39,12 +39,12 @@ class GtfsScheduleWithDelaysEntity extends Equatable {
     this.delaySeconds,
     this.delayType,
     this.delayReason,
-    required this.stopSequence,
+    this.stopSequence,
     this.directionId,
     this.wheelchairAccessible,
     this.bikesAllowed,
-    required this.serviceId,
-    required this.isRealTime,
+    this.serviceId,
+    this.isRealTime,
   });
 
   GtfsScheduleWithDelaysEntity copyWith({

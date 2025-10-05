@@ -6,13 +6,13 @@ part 'gtfs_schedule_with_delays_dto.g.dart';
 @JsonSerializable()
 class GtfsScheduleWithDelaysDto {
   @JsonKey(name: 'stop_id')
-  final String stopId;
+  final String? stopId;
 
   @JsonKey(name: 'stop_name')
-  final String stopName;
+  final String? stopName;
 
   @JsonKey(name: 'route_id')
-  final String routeId;
+  final String? routeId;
 
   @JsonKey(name: 'route_short_name')
   final String? routeShortName;
@@ -24,7 +24,7 @@ class GtfsScheduleWithDelaysDto {
   final String? routeColor;
 
   @JsonKey(name: 'trip_id')
-  final String tripId;
+  final String? tripId;
 
   @JsonKey(name: 'trip_headsign')
   final String? tripHeadsign;
@@ -51,7 +51,7 @@ class GtfsScheduleWithDelaysDto {
   final String? delayReason;
 
   @JsonKey(name: 'stop_sequence')
-  final int stopSequence;
+  final int? stopSequence;
 
   @JsonKey(name: 'direction_id')
   final int? directionId;
@@ -63,19 +63,19 @@ class GtfsScheduleWithDelaysDto {
   final int? bikesAllowed;
 
   @JsonKey(name: 'service_id')
-  final String serviceId;
+  final String? serviceId;
 
   @JsonKey(name: 'is_real_time')
-  final bool isRealTime;
+  final bool? isRealTime;
 
   const GtfsScheduleWithDelaysDto({
-    required this.stopId,
-    required this.stopName,
-    required this.routeId,
+    this.stopId,
+    this.stopName,
+    this.routeId,
     this.routeShortName,
     this.routeLongName,
     this.routeColor,
-    required this.tripId,
+    this.tripId,
     this.tripHeadsign,
     this.scheduledArrivalTime,
     this.scheduledDepartureTime,
@@ -84,12 +84,12 @@ class GtfsScheduleWithDelaysDto {
     this.delaySeconds,
     this.delayType,
     this.delayReason,
-    required this.stopSequence,
+    this.stopSequence,
     this.directionId,
     this.wheelchairAccessible,
     this.bikesAllowed,
-    required this.serviceId,
-    required this.isRealTime,
+    this.serviceId,
+    this.isRealTime,
   });
 
   factory GtfsScheduleWithDelaysDto.fromJson(Map<String, dynamic> json) =>
@@ -99,7 +99,7 @@ class GtfsScheduleWithDelaysDto {
 
   GtfsScheduleWithDelaysEntity toEntity() {
     return GtfsScheduleWithDelaysEntity(
-      stopId: stopId,
+      stopId: stopId ?? '',
       stopName: stopName,
       routeId: routeId,
       routeShortName: routeShortName,

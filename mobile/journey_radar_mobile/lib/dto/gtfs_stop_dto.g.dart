@@ -7,12 +7,12 @@ part of 'gtfs_stop_dto.dart';
 // **************************************************************************
 
 GtfsStopDto _$GtfsStopDtoFromJson(Map<String, dynamic> json) => GtfsStopDto(
-      stopId: json['stop_id'] as String,
+      stopId: json['stop_id'] as String?,
       stopCode: json['stop_code'] as String?,
-      stopName: json['stop_name'] as String,
+      stopName: json['stop_name'] as String?,
       stopDesc: json['stop_desc'] as String?,
-      stopLat: (json['stop_lat'] as num).toDouble(),
-      stopLon: (json['stop_lon'] as num).toDouble(),
+      stopLat: (json['stop_lat'] as num?)?.toDouble(),
+      stopLon: (json['stop_lon'] as num?)?.toDouble(),
       zoneId: json['zone_id'] as String?,
       stopUrl: json['stop_url'] as String?,
       locationType: (json['location_type'] as num?)?.toInt(),

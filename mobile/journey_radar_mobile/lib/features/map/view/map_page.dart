@@ -41,9 +41,9 @@ class _MapPageViewState extends State<_MapPageView> {
   final MapController _mapController = MapController();
 
   List<Marker> _buildGtfsStopMarkers(List<GtfsStopEntity> stops) {
-    return stops.map((stop) {
+    return stops.where((stop) => stop.position != null).map((stop) {
       return AppMarkerHelper.busStop(
-        point: stop.position,
+        point: stop.position!,
         onTap: () => _showGtfsStopInfo(stop),
         size: MarkerSize.small,
       );
@@ -57,7 +57,9 @@ class _MapPageViewState extends State<_MapPageView> {
     // Grupuj kształty według shapeId
     final Map<String, List<GtfsShapeEntity>> groupedShapes = {};
     for (final shape in shapes) {
-      groupedShapes.putIfAbsent(shape.shapeId, () => []).add(shape);
+      if (shape.shapeId != null) {
+        groupedShapes.putIfAbsent(shape.shapeId!, () => []).add(shape);
+      }
     }
 
     List<Polyline> polylines = [];
@@ -67,7 +69,7 @@ class _MapPageViewState extends State<_MapPageView> {
       final shapeList = entry.value;
 
       // Sortuj według sekwencji
-      shapeList.sort((a, b) => a.sequence.compareTo(b.sequence));
+      shapeList.sort((a, b) => (a.sequence ?? 0).compareTo(b.sequence ?? 0));
 
       // Znajdź kolor trasy
       String routeColor = '#000000';
@@ -83,7 +85,10 @@ class _MapPageViewState extends State<_MapPageView> {
 
       polylines.add(
         Polyline(
-          points: shapeList.map((shape) => shape.position).toList(),
+          points: shapeList
+              .where((shape) => shape.position != null)
+              .map((shape) => shape.position!)
+              .toList(),
           color: _parseColor(routeColor),
           strokeWidth: 4.0,
         ),
@@ -102,7 +107,7 @@ class _MapPageViewState extends State<_MapPageView> {
       context: context,
       builder: (context) => AlertDialog(
         title: AppText(
-          stop.stopName,
+          stop.stopName ?? 'Nieznany przystanek',
           variant: AppTextVariant.title,
         ),
         content: Column(
@@ -116,10 +121,12 @@ class _MapPageViewState extends State<_MapPageView> {
               ),
               SizedBox(height: AppSpacing.s),
             ],
-            AppText(
-              'Współrzędne: ${stop.position.latitude.toStringAsFixed(4)}, ${stop.position.longitude.toStringAsFixed(4)}',
-              variant: AppTextVariant.caption,
-            ),
+            if (stop.position != null) ...[
+              AppText(
+                'Współrzędne: ${stop.position!.latitude.toStringAsFixed(4)}, ${stop.position!.longitude.toStringAsFixed(4)}',
+                variant: AppTextVariant.caption,
+              ),
+            ],
             if (stop.wheelchairBoarding != null) ...[
               SizedBox(height: AppSpacing.s),
               AppText(
@@ -150,9 +157,11 @@ class _MapPageViewState extends State<_MapPageView> {
 
   void _showGtfsSchedule(GtfsStopEntity stop) {
     // Pobierz rozkład jazdy dla przystanku
-    context
-        .read<MapCubit>()
-        .getGtfsScheduleForStop(stopId: stop.stopId, limit: 10);
+    if (stop.stopId != null) {
+      context
+          .read<MapCubit>()
+          .getGtfsScheduleForStop(stopId: stop.stopId!, limit: 10);
+    }
 
     showDialog(
       context: context,
@@ -220,7 +229,7 @@ class _MapPageViewState extends State<_MapPageView> {
                                 '',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          if (schedule.isRealTime)
+                          if (schedule.isRealTime == true)
                             const Icon(Icons.access_time,
                                 color: Colors.green, size: 16),
                         ],
@@ -427,7 +436,7 @@ class _MapPageViewState extends State<_MapPageView> {
                         AppButton(
                           text: LocaleKeys.refresh.tr(),
                           variant: AppButtonVariant.primary,
-                          size: AppButtonSize.small,
+                          size: AppButtonSize.medium,
                           onPressed: () => _refreshData(context),
                         ),
                       ],

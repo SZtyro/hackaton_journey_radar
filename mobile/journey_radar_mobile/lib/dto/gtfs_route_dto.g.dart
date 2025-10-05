@@ -7,12 +7,12 @@ part of 'gtfs_route_dto.dart';
 // **************************************************************************
 
 GtfsRouteDto _$GtfsRouteDtoFromJson(Map<String, dynamic> json) => GtfsRouteDto(
-      routeId: json['route_id'] as String,
+      routeId: json['route_id'] as String?,
       agencyId: json['agency_id'] as String?,
       routeShortName: json['route_short_name'] as String?,
       routeLongName: json['route_long_name'] as String?,
       routeDesc: json['route_desc'] as String?,
-      routeType: (json['route_type'] as num).toInt(),
+      routeType: (json['route_type'] as num?)?.toInt(),
       routeUrl: json['route_url'] as String?,
       routeColor: json['route_color'] as String?,
       routeTextColor: json['route_text_color'] as String?,
