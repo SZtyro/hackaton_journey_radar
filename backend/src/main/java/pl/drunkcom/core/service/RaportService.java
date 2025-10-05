@@ -113,27 +113,6 @@ public class RaportService extends BaseGtfsService<Raport, Long, RaportRepositor
     }
 
     /**
-     * Create a new report from routeId string.
-     * Convenience method for creating reports with just a routeId.
-     *
-     * @param raport The report data
-     * @param routeId The route identifier
-     * @return The created report
-     * @throws IllegalArgumentException if routeId doesn't exist
-     */
-    public Raport saveWithRouteId(Raport raport, String routeId) {
-        if (routeId != null && !routeId.trim().isEmpty()) {
-            Optional<Route> route = routeService.findById(routeId);
-            if (route.isEmpty()) {
-                throw new IllegalArgumentException("Route with ID '" + routeId + "' does not exist");
-            }
-            raport.setRoute(route.get());
-        }
-
-        return save(raport);
-    }
-
-    /**
      * Validate if a route ID exists in the system.
      *
      * @param routeId The route identifier to validate

@@ -62,10 +62,3 @@ public class GtfsRealTimeService {
         return positions;
     }
 }
-
-/**
- * A simple record (a modern, immutable data class) to hold our processed data.
- * This makes it much cleaner to pass this information around the application.
- */
-record SimpleVehiclePosition(String vehicleId, String tripId, float latitude, float longitude) {}
-
