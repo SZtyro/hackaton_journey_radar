@@ -40,65 +40,197 @@ class _MapPageView extends StatefulWidget {
 class _MapPageViewState extends State<_MapPageView> {
   final MapController _mapController = MapController();
 
-  List<Marker> _buildMarkers(List<MapPointEntity> mapPoints) {
-    return mapPoints.map((point) {
-      return MarkerStyles.mapPoint(
-        point: point.position,
-        onTap: () => _showPointInfo(point),
-        iconData: _getIconForType(point.iconType),
-        backgroundColor: _parseColor(point.color),
-        size: MarkerSize.extraSmall,
+  List<Marker> _buildGtfsStopMarkers(List<GtfsStopEntity> stops) {
+    return stops.map((stop) {
+      return AppMarkerHelper.busStop(
+        point: stop.position,
+        onTap: () => _showGtfsStopInfo(stop),
+        size: MarkerSize.small,
       );
     }).toList();
+  }
+
+  List<Polyline> _buildAllGtfsRoutePolylines(
+      List<GtfsShapeEntity> shapes, List<GtfsRouteEntity>? routes) {
+    if (shapes.isEmpty) return [];
+
+    // Grupuj kształty według shapeId
+    final Map<String, List<GtfsShapeEntity>> groupedShapes = {};
+    for (final shape in shapes) {
+      groupedShapes.putIfAbsent(shape.shapeId, () => []).add(shape);
+    }
+
+    List<Polyline> polylines = [];
+
+    for (final entry in groupedShapes.entries) {
+      final shapeId = entry.key;
+      final shapeList = entry.value;
+
+      // Sortuj według sekwencji
+      shapeList.sort((a, b) => a.sequence.compareTo(b.sequence));
+
+      // Znajdź kolor trasy
+      String routeColor = '#000000';
+      if (routes != null) {
+        // Mapuj shapeId do routeId (uproszczona logika)
+        final routeId = shapeId.replaceAll('shape_', 'route_');
+        final route = routes.firstWhere(
+          (r) => r.routeId == routeId,
+          orElse: () => routes.first,
+        );
+        routeColor = route.routeColor ?? '#000000';
+      }
+
+      polylines.add(
+        Polyline(
+          points: shapeList.map((shape) => shape.position).toList(),
+          color: _parseColor(routeColor),
+          strokeWidth: 4.0,
+        ),
+      );
+    }
+
+    return polylines;
   }
 
   Color _parseColor(String colorString) {
     return Color(int.parse(colorString.replaceFirst('#', '0xFF')));
   }
 
-  IconData _getIconForType(String type) {
-    switch (type) {
-      case 'landmark':
-        return Icons.landscape;
-      case 'bus':
-        return Icons.directions_bus;
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'shopping':
-        return Icons.shopping_cart;
-      default:
-        return Icons.place;
-    }
-  }
-
-  void _showPointInfo(MapPointEntity point) {
+  void _showGtfsStopInfo(GtfsStopEntity stop) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: AppText(
-          point.title,
+          stop.stopName,
           variant: AppTextVariant.title,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (point.description != null) ...[
+            if (stop.stopCode != null) ...[
               AppText(
-                point.description!,
+                'Kod przystanku: ${stop.stopCode}',
                 variant: AppTextVariant.body,
               ),
               SizedBox(height: AppSpacing.s),
             ],
             AppText(
-              '${LocaleKeys.coordinates.tr()}: ${point.position.latitude.toStringAsFixed(4)}, ${point.position.longitude.toStringAsFixed(4)}',
+              'Współrzędne: ${stop.position.latitude.toStringAsFixed(4)}, ${stop.position.longitude.toStringAsFixed(4)}',
               variant: AppTextVariant.caption,
             ),
-            AppText(
-              '${LocaleKeys.createdAt.tr()}: ${point.createdAt.toString().split(' ')[0]}',
-              variant: AppTextVariant.caption,
-            ),
+            if (stop.wheelchairBoarding != null) ...[
+              SizedBox(height: AppSpacing.s),
+              AppText(
+                'Dostępność dla wózków: ${_getWheelchairAccessibilityText(stop.wheelchairBoarding!)}',
+                variant: AppTextVariant.caption,
+              ),
+            ],
           ],
+        ),
+        actions: [
+          AppButton(
+            text: LocaleKeys.schedule.tr(),
+            variant: AppButtonVariant.primary,
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showGtfsSchedule(stop);
+            },
+          ),
+          AppButton(
+            text: LocaleKeys.close.tr(),
+            variant: AppButtonVariant.secondary,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGtfsSchedule(GtfsStopEntity stop) {
+    // Pobierz rozkład jazdy dla przystanku
+    context
+        .read<MapCubit>()
+        .getGtfsScheduleForStop(stopId: stop.stopId, limit: 10);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: AppText(
+          'Rozkład jazdy - ${stop.stopName}',
+          variant: AppTextVariant.title,
+        ),
+        content: BlocBuilder<MapCubit, MapState>(
+          builder: (context, state) {
+            if (state.getGtfsScheduleStatus == StateStatus.loading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state.gtfsSchedule == null || state.gtfsSchedule!.isEmpty) {
+              return const AppText('Brak danych o rozkładzie jazdy');
+            }
+
+            return SizedBox(
+              width: double.maxFinite,
+              height: 300,
+              child: ListView.builder(
+                itemCount: state.gtfsSchedule!.length,
+                itemBuilder: (context, index) {
+                  final schedule = state.gtfsSchedule![index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: _parseColor(schedule.routeColor ?? '#000000'),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            schedule.routeShortName ?? '',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      title: Text(schedule.routeLongName ?? ''),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Kierunek: ${schedule.tripHeadsign ?? ''}'),
+                          if (schedule.delaySeconds != null &&
+                              schedule.delaySeconds! > 0)
+                            Text(
+                              'Opóźnienie: ${_formatDelay(schedule.delaySeconds!)}',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                        ],
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            schedule.realTimeArrivalTime ??
+                                schedule.scheduledArrivalTime ??
+                                '',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          if (schedule.isRealTime)
+                            const Icon(Icons.access_time,
+                                color: Colors.green, size: 16),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
         ),
         actions: [
           AppButton(
@@ -109,6 +241,29 @@ class _MapPageViewState extends State<_MapPageView> {
         ],
       ),
     );
+  }
+
+  String _getWheelchairAccessibilityText(int accessibility) {
+    switch (accessibility) {
+      case 0:
+        return 'Nieznane';
+      case 1:
+        return 'Dostępne';
+      case 2:
+        return 'Niedostępne';
+      default:
+        return 'Nieznane';
+    }
+  }
+
+  String _formatDelay(int delaySeconds) {
+    if (delaySeconds < 60) {
+      return '${delaySeconds}s';
+    } else {
+      final minutes = delaySeconds ~/ 60;
+      final seconds = delaySeconds % 60;
+      return '${minutes}m ${seconds}s';
+    }
   }
 
   void _centerOnUserLocation(BuildContext context) {
@@ -122,12 +277,8 @@ class _MapPageViewState extends State<_MapPageView> {
   }
 
   void _refreshData(BuildContext context) {
-    context
-        .read<MapCubit>()
-        .getMapPoints(limit: MapConstants.defaultMapPointsLimit);
-    context
-        .read<MapCubit>()
-        .getBusRoutes(limit: MapConstants.defaultBusRoutesLimit);
+    context.read<MapCubit>().getGtfsRoutes(limit: 10);
+    context.read<MapCubit>().getGtfsStops(limit: 20);
   }
 
   void _alignToNorth() {
@@ -215,14 +366,21 @@ class _MapPageViewState extends State<_MapPageView> {
                             ),
                           ],
                         )),
-                  // Markery punktów
-                  if (state.mapPoints != null)
-                    MarkerLayer(markers: _buildMarkers(state.mapPoints!)),
+                  // Trasy GTFS
+                  if (state.gtfsShapes != null && state.gtfsShapes!.isNotEmpty)
+                    PolylineLayer(
+                      polylines: _buildAllGtfsRoutePolylines(
+                          state.gtfsShapes!, state.gtfsRoutes),
+                    ),
+                  // Markery przystanków GTFS
+                  if (state.gtfsStops != null)
+                    MarkerLayer(
+                        markers: _buildGtfsStopMarkers(state.gtfsStops!)),
                   // Marker lokalizacji użytkownika
                   if (state.currentLocation != null)
                     MarkerLayer(
                       markers: [
-                        MarkerStyles.userLocation(
+                        AppMarkerHelper.userLocation(
                           point: state.currentLocation!,
                           onTap: () => _centerOnUserLocation(context),
                           size: MarkerSize.extraSmall,
@@ -234,7 +392,9 @@ class _MapPageViewState extends State<_MapPageView> {
 
               // Loading indicator
               if (state.getMapPointsStatus == StateStatus.loading ||
-                  state.getBusRoutesStatus == StateStatus.loading)
+                  state.getBusRoutesStatus == StateStatus.loading ||
+                  state.getGtfsRoutesStatus == StateStatus.loading ||
+                  state.getGtfsStopsStatus == StateStatus.loading)
                 AppLoading(
                   message: LocaleKeys.loading.tr(),
                   variant: AppLoadingVariant.circular,

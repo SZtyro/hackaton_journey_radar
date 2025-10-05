@@ -1,2 +1,10 @@
 export 'bus_route_entity.dart';
 export 'map_point_entity.dart';
+export 'gtfs_stop_entity.dart';
+export 'gtfs_route_entity.dart';
+export 'gtfs_trip_entity.dart';
+export 'gtfs_stop_time_entity.dart';
+export 'gtfs_schedule_entity.dart';
+export 'gtfs_shape_entity.dart';
+export 'gtfs_delay_entity.dart';
+export 'gtfs_schedule_with_delays_entity.dart';

@@ -441,4 +441,356 @@ class MockMapApi {
           8, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
     );
   }
+
+  // GTFS Mock data
+  static final List<GtfsRouteEntity> _mockGtfsRoutes = [
+    GtfsRouteEntity(
+      routeId: 'route_1',
+      routeShortName: '15',
+      routeLongName: 'Centrum - Dworzec Główny',
+      routeType: 3, // Bus
+      routeColor: '#FF5722',
+      routeTextColor: '#FFFFFF',
+    ),
+    GtfsRouteEntity(
+      routeId: 'route_2',
+      routeShortName: '22',
+      routeLongName: 'Nowa Huta - Centrum',
+      routeType: 3, // Bus
+      routeColor: '#2196F3',
+      routeTextColor: '#FFFFFF',
+    ),
+    GtfsRouteEntity(
+      routeId: 'route_3',
+      routeShortName: '1',
+      routeLongName: 'Tramwaj - Okrężna',
+      routeType: 0, // Tram
+      routeColor: '#4CAF50',
+      routeTextColor: '#FFFFFF',
+    ),
+  ];
+
+  static final List<GtfsStopEntity> _mockGtfsStops = [
+    GtfsStopEntity(
+      stopId: 'stop_1',
+      stopName: 'Rynek Główny',
+      position: const LatLng(50.0647, 19.9450),
+      stopCode: 'R001',
+      wheelchairBoarding: 1, // Available
+    ),
+    GtfsStopEntity(
+      stopId: 'stop_2',
+      stopName: 'Dworzec Główny',
+      position: const LatLng(50.0700, 19.9500),
+      stopCode: 'D001',
+      wheelchairBoarding: 1, // Available
+    ),
+    GtfsStopEntity(
+      stopId: 'stop_3',
+      stopName: 'Plac Wszystkich Świętych',
+      position: const LatLng(50.0750, 19.9550),
+      stopCode: 'P001',
+      wheelchairBoarding: 0, // Unknown
+    ),
+    GtfsStopEntity(
+      stopId: 'stop_4',
+      stopName: 'Kraków Główny',
+      position: const LatLng(50.0800, 19.9600),
+      stopCode: 'K001',
+      wheelchairBoarding: 1, // Available
+    ),
+  ];
+
+  static final List<GtfsShapeEntity> _mockGtfsShapes = [
+    // Route 1 shapes
+    GtfsShapeEntity(
+      shapeId: 'shape_1',
+      position: const LatLng(50.0647, 19.9450),
+      sequence: 1,
+    ),
+    GtfsShapeEntity(
+      shapeId: 'shape_1',
+      position: const LatLng(50.0660, 19.9460),
+      sequence: 2,
+    ),
+    GtfsShapeEntity(
+      shapeId: 'shape_1',
+      position: const LatLng(50.0680, 19.9480),
+      sequence: 3,
+    ),
+    GtfsShapeEntity(
+      shapeId: 'shape_1',
+      position: const LatLng(50.0700, 19.9500),
+      sequence: 4,
+    ),
+    // Route 2 shapes
+    GtfsShapeEntity(
+      shapeId: 'shape_2',
+      position: const LatLng(50.0800, 19.9600),
+      sequence: 1,
+    ),
+    GtfsShapeEntity(
+      shapeId: 'shape_2',
+      position: const LatLng(50.0780, 19.9580),
+      sequence: 2,
+    ),
+    GtfsShapeEntity(
+      shapeId: 'shape_2',
+      position: const LatLng(50.0760, 19.9560),
+      sequence: 3,
+    ),
+    GtfsShapeEntity(
+      shapeId: 'shape_2',
+      position: const LatLng(50.0740, 19.9540),
+      sequence: 4,
+    ),
+    GtfsShapeEntity(
+      shapeId: 'shape_2',
+      position: const LatLng(50.0720, 19.9520),
+      sequence: 5,
+    ),
+    GtfsShapeEntity(
+      shapeId: 'shape_2',
+      position: const LatLng(50.0700, 19.9500),
+      sequence: 6,
+    ),
+  ];
+
+  static final List<GtfsScheduleWithDelaysEntity> _mockGtfsSchedules = [
+    GtfsScheduleWithDelaysEntity(
+      stopId: 'stop_1',
+      stopName: 'Rynek Główny',
+      routeId: 'route_1',
+      routeShortName: '15',
+      routeLongName: 'Centrum - Dworzec Główny',
+      routeColor: '#FF5722',
+      tripId: 'trip_1',
+      tripHeadsign: 'Dworzec Główny',
+      scheduledArrivalTime: '08:30:00',
+      scheduledDepartureTime: '08:32:00',
+      realTimeArrivalTime: '08:32:00',
+      realTimeDepartureTime: '08:34:00',
+      delaySeconds: 120,
+      delayType: 'arrival',
+      delayReason: 'Korek uliczny',
+      stopSequence: 1,
+      directionId: 0,
+      wheelchairAccessible: 1,
+      bikesAllowed: 1,
+      serviceId: 'service_1',
+      isRealTime: true,
+    ),
+    GtfsScheduleWithDelaysEntity(
+      stopId: 'stop_1',
+      stopName: 'Rynek Główny',
+      routeId: 'route_2',
+      routeShortName: '22',
+      routeLongName: 'Nowa Huta - Centrum',
+      routeColor: '#2196F3',
+      tripId: 'trip_2',
+      tripHeadsign: 'Nowa Huta',
+      scheduledArrivalTime: '08:35:00',
+      scheduledDepartureTime: '08:37:00',
+      realTimeArrivalTime: '08:35:00',
+      realTimeDepartureTime: '08:37:00',
+      delaySeconds: 0,
+      delayType: null,
+      delayReason: null,
+      stopSequence: 1,
+      directionId: 1,
+      wheelchairAccessible: 1,
+      bikesAllowed: 1,
+      serviceId: 'service_1',
+      isRealTime: true,
+    ),
+  ];
+
+  static final List<GtfsDelayEntity> _mockGtfsDelays = [
+    GtfsDelayEntity(
+      tripId: 'trip_1',
+      stopId: 'stop_1',
+      delaySeconds: 120,
+      delayType: 'arrival',
+      reason: 'Korek uliczny',
+      createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
+    ),
+    GtfsDelayEntity(
+      tripId: 'trip_3',
+      stopId: 'stop_2',
+      delaySeconds: 300,
+      delayType: 'departure',
+      reason: 'Awaria pojazdu',
+      createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
+    ),
+  ];
+
+  // GTFS API methods
+  static Future<List<GtfsRouteEntity>> getGtfsRoutes({
+    int? limit,
+    int? offset,
+    String? routeType,
+  }) async {
+    await _simulateDelay();
+
+    if (_shouldSimulateError()) {
+      throw Exception('Network error: Unable to fetch GTFS routes');
+    }
+
+    var routes = List<GtfsRouteEntity>.from(_mockGtfsRoutes);
+
+    // Filter by route type if provided
+    if (routeType != null) {
+      final type = int.tryParse(routeType);
+      if (type != null) {
+        routes = routes.where((route) => route.routeType == type).toList();
+      }
+    }
+
+    // Apply pagination
+    final startIndex = offset ?? 0;
+    final endIndex = limit != null ? startIndex + limit : routes.length;
+
+    return routes.skip(startIndex).take(endIndex - startIndex).toList();
+  }
+
+  static Future<List<GtfsStopEntity>> getGtfsStops({
+    int? limit,
+    int? offset,
+    String? stopId,
+  }) async {
+    await _simulateDelay();
+
+    if (_shouldSimulateError()) {
+      throw Exception('Network error: Unable to fetch GTFS stops');
+    }
+
+    var stops = List<GtfsStopEntity>.from(_mockGtfsStops);
+
+    // Filter by stop ID if provided
+    if (stopId != null) {
+      stops = stops.where((stop) => stop.stopId == stopId).toList();
+    }
+
+    // Apply pagination
+    final startIndex = offset ?? 0;
+    final endIndex = limit != null ? startIndex + limit : stops.length;
+
+    return stops.skip(startIndex).take(endIndex - startIndex).toList();
+  }
+
+  static Future<List<GtfsShapeEntity>> getGtfsShapes({
+    required String routeId,
+  }) async {
+    await _simulateDelay();
+
+    if (_shouldSimulateError()) {
+      throw Exception('Network error: Unable to fetch GTFS shapes');
+    }
+
+    // Map route IDs to shape IDs
+    final shapeIdMap = {
+      'route_1': 'shape_1',
+      'route_2': 'shape_2',
+      'route_3': 'shape_3',
+    };
+
+    final shapeId = shapeIdMap[routeId];
+    if (shapeId == null) {
+      return [];
+    }
+
+    return _mockGtfsShapes.where((shape) => shape.shapeId == shapeId).toList()
+      ..sort((a, b) => a.sequence.compareTo(b.sequence));
+  }
+
+  static Future<List<GtfsStopEntity>> getGtfsStopsForRoute({
+    required String routeId,
+  }) async {
+    await _simulateDelay();
+
+    if (_shouldSimulateError()) {
+      throw Exception('Network error: Unable to fetch GTFS stops for route');
+    }
+
+    // Map route IDs to stop IDs
+    final routeStopsMap = {
+      'route_1': ['stop_1', 'stop_2'],
+      'route_2': ['stop_2', 'stop_3', 'stop_4'],
+      'route_3': ['stop_1', 'stop_3', 'stop_4'],
+    };
+
+    final stopIds = routeStopsMap[routeId] ?? [];
+    return _mockGtfsStops
+        .where((stop) => stopIds.contains(stop.stopId))
+        .toList();
+  }
+
+  static Future<List<GtfsScheduleWithDelaysEntity>> getGtfsScheduleForStop({
+    required String stopId,
+    int? limit,
+  }) async {
+    await _simulateDelay();
+
+    if (_shouldSimulateError()) {
+      throw Exception('Network error: Unable to fetch GTFS schedule for stop');
+    }
+
+    var schedules = _mockGtfsSchedules
+        .where((schedule) => schedule.stopId == stopId)
+        .toList();
+
+    // Apply limit
+    if (limit != null && schedules.length > limit) {
+      schedules = schedules.take(limit).toList();
+    }
+
+    return schedules;
+  }
+
+  static Future<List<GtfsDelayEntity>> getGtfsDelaysForRoute({
+    required String routeId,
+  }) async {
+    await _simulateDelay();
+
+    if (_shouldSimulateError()) {
+      throw Exception('Network error: Unable to fetch GTFS delays for route');
+    }
+
+    // Map route IDs to trip IDs
+    final routeTripsMap = {
+      'route_1': ['trip_1'],
+      'route_2': ['trip_2'],
+      'route_3': ['trip_3'],
+    };
+
+    final tripIds = routeTripsMap[routeId] ?? [];
+    return _mockGtfsDelays
+        .where((delay) => tripIds.contains(delay.tripId))
+        .toList();
+  }
+
+  static Future<List<GtfsStopEntity>> getNearbyGtfsStops({
+    required LatLng location,
+    double? radius,
+    int? limit,
+  }) async {
+    await _simulateDelay();
+
+    if (_shouldSimulateError()) {
+      throw Exception('Network error: Unable to fetch nearby GTFS stops');
+    }
+
+    final searchRadius = radius ?? 1.0; // Default 1km radius
+    var results = _mockGtfsStops.where((stop) {
+      final distance = _calculateDistance(location, stop.position);
+      return distance <= searchRadius;
+    }).toList();
+
+    // Apply limit
+    if (limit != null && results.length > limit) {
+      results = results.take(limit).toList();
+    }
+
+    return results;
+  }
 }

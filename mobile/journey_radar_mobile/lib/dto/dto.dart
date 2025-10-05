@@ -1,2 +1,10 @@
 export 'bus_route_dto.dart';
 export 'map_point_dto.dart';
+export 'gtfs_stop_dto.dart';
+export 'gtfs_route_dto.dart';
+export 'gtfs_trip_dto.dart';
+export 'gtfs_stop_time_dto.dart';
+export 'gtfs_schedule_dto.dart';
+export 'gtfs_shape_dto.dart';
+export 'gtfs_delay_dto.dart';
+export 'gtfs_schedule_with_delays_dto.dart';

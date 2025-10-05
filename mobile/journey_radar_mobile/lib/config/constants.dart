@@ -22,7 +22,7 @@ abstract class StorageKeys {
 
 abstract class AppConstants {
   static const Color defaultSeed = Color(0xFF6750A4);
-  static const baseUrl = 'https://api.journeyradar.com';
+  static const baseUrl = 'http://146.59.17.87:2137';
   static const appName = 'Journey Radar';
   static const androidPushNotificationsChannelId =
       'journey_radar_mobile_channel_id';

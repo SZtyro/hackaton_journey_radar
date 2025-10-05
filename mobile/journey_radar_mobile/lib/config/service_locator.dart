@@ -27,7 +27,7 @@ final getIt = GetIt.instance;
 
 /// Flag to determine whether to use mock API or real API
 /// Set to true for development, false for production
-const bool useMockApi = true; // Change to false when ready for real API
+const bool useMockApi = false; // Change to false when ready for real API
 
 Future<void> setUpServiceLocator() async {
   /// Configure FlutterSecureStorage with Android-specific options to prevent data loss on updates
@@ -123,11 +123,28 @@ Future<void> setUpServiceLocator() async {
   //   FirebasePushNotificationService.new,
   // );
 
+  final Dio dio = Dio(
+    BaseOptions(
+      baseUrl: AppConstants.baseUrl,
+      connectTimeout: DioNetworkConstants.connectTimeout,
+      receiveTimeout: DioNetworkConstants.receiveTimeout,
+      sendTimeout: DioNetworkConstants.sendTimeout,
+    ),
+  );
+
+  dio.interceptors.add(
+    PrettyDioLogger(
+      requestHeader: true,
+      requestBody: true,
+      responseHeader: true,
+    ),
+  );
+
   getIt.registerLazySingleton<Api>(
     () => Api(
-      dio: getIt<Dio>(),
+      dio: dio,
       baseUrl:
-          'https://api.journey-radar.com', // Replace with your API base URL
+          AppConstants.baseUrl,
     ),
   );
 
@@ -137,6 +154,7 @@ Future<void> setUpServiceLocator() async {
       useMockApi: useMockApi,
       dio: userDio,
       baseUrl: AppConstants.baseUrl,
+      api: useMockApi ? null : getIt<Api>(),
     ),
   );
 

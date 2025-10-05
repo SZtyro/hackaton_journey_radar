@@ -3,87 +3,45 @@ import 'package:latlong2/latlong.dart';
 
 /// Repository interface for map operations including map points and bus routes.
 abstract class Repository {
-  // Map Points operations
-  /// Retrieves all map points with optional filtering.
-  Future<Result<List<MapPointEntity>, Exception>> getMapPoints({
+  // GTFS operations
+  /// Retrieves GTFS routes with optional filtering.
+  Future<Result<List<GtfsRouteEntity>, Exception>> getGtfsRoutes({
     int? limit,
     int? offset,
-    String? iconType,
+    String? routeType,
   });
 
-  /// Retrieves a specific map point by ID.
-  Future<Result<MapPointEntity, Exception>> getMapPoint({
-    required String id,
-  });
-
-  /// Creates a new map point.
-  Future<Result<MapPointEntity, Exception>> createMapPoint({
-    required MapPointEntity mapPoint,
-  });
-
-  /// Updates an existing map point.
-  Future<Result<MapPointEntity, Exception>> updateMapPoint({
-    required String id,
-    required MapPointEntity mapPoint,
-  });
-
-  /// Deletes a map point by ID.
-  Future<Result<void, Exception>> deleteMapPoint({
-    required String id,
-  });
-
-  /// Searches map points by query string.
-  Future<Result<List<MapPointEntity>, Exception>> searchMapPoints({
-    required String query,
+  /// Retrieves GTFS stops with optional filtering.
+  Future<Result<List<GtfsStopEntity>, Exception>> getGtfsStops({
     int? limit,
     int? offset,
+    String? stopId,
   });
 
-  /// Retrieves map points near a specific location.
-  Future<Result<List<MapPointEntity>, Exception>> getNearbyMapPoints({
-    required LatLng location,
-    double? radius,
+  /// Retrieves GTFS shapes for a specific route.
+  Future<Result<List<GtfsShapeEntity>, Exception>> getGtfsShapes({
+    required String routeId,
+  });
+
+  /// Retrieves GTFS stops for a specific route.
+  Future<Result<List<GtfsStopEntity>, Exception>> getGtfsStopsForRoute({
+    required String routeId,
+  });
+
+  /// Retrieves GTFS schedule for a specific stop.
+  Future<Result<List<GtfsScheduleWithDelaysEntity>, Exception>>
+      getGtfsScheduleForStop({
+    required String stopId,
     int? limit,
   });
 
-  // Bus Routes operations
-  /// Retrieves all bus routes with optional filtering.
-  Future<Result<List<BusRouteEntity>, Exception>> getBusRoutes({
-    int? limit,
-    int? offset,
-    String? number,
+  /// Retrieves GTFS delays for a specific route.
+  Future<Result<List<GtfsDelayEntity>, Exception>> getGtfsDelaysForRoute({
+    required String routeId,
   });
 
-  /// Retrieves a specific bus route by ID.
-  Future<Result<BusRouteEntity, Exception>> getBusRoute({
-    required String id,
-  });
-
-  /// Creates a new bus route.
-  Future<Result<BusRouteEntity, Exception>> createBusRoute({
-    required BusRouteEntity busRoute,
-  });
-
-  /// Updates an existing bus route.
-  Future<Result<BusRouteEntity, Exception>> updateBusRoute({
-    required String id,
-    required BusRouteEntity busRoute,
-  });
-
-  /// Deletes a bus route by ID.
-  Future<Result<void, Exception>> deleteBusRoute({
-    required String id,
-  });
-
-  /// Searches bus routes by query string.
-  Future<Result<List<BusRouteEntity>, Exception>> searchBusRoutes({
-    required String query,
-    int? limit,
-    int? offset,
-  });
-
-  /// Retrieves bus routes near a specific location.
-  Future<Result<List<BusRouteEntity>, Exception>> getNearbyBusRoutes({
+  /// Retrieves GTFS stops near a specific location.
+  Future<Result<List<GtfsStopEntity>, Exception>> getNearbyGtfsStops({
     required LatLng location,
     double? radius,
     int? limit,

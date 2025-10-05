@@ -14,7 +14,7 @@ class AppMarker extends StatelessWidget {
     this.color,
     this.backgroundColor,
     this.borderColor,
-    this.size = MarkerSize.medium,
+    this.size = MarkerSize.extraSmall,
     this.isSelected = false,
     this.isAnimated = true,
     this.elevation = MarkerConstants.defaultElevation,
@@ -208,25 +208,32 @@ class ExpressiveMarkerHelper {
   }
 }
 
-/// Predefiniowane style markerów
-class MarkerStyles {
+/// Extension dla klasy Marker z predefiniowanymi stylami
+class AppMarkerHelper {
   static Marker userLocation({
     required LatLng point,
     required VoidCallback onTap,
     Color? color,
     MarkerSize size = MarkerSize.medium,
   }) {
-    return ExpressiveMarkerHelper.createMarker(
+    final markerSize = ExpressiveMarkerHelper._getMarkerSize(size);
+
+    return Marker(
       point: point,
-      onTap: onTap,
-      iconData: Icons.person,
-      color: MarkerConstants.defaultIconColor,
-      backgroundColor: color ?? MarkerConstants.defaultUserLocationColor,
-      borderColor: MarkerConstants.defaultBorderColor,
-      size: size,
-      elevation: MarkerConstants.userLocationElevation,
-      shadowBlur: MarkerConstants.userLocationShadowBlur,
-      shadowSpread: MarkerConstants.userLocationShadowSpread,
+      width: markerSize,
+      height: markerSize,
+      child: AppMarker(
+        point: point,
+        onTap: onTap,
+        iconData: Icons.person,
+        color: MarkerConstants.defaultIconColor,
+        backgroundColor: color ?? MarkerConstants.defaultUserLocationColor,
+        borderColor: MarkerConstants.defaultBorderColor,
+        size: size,
+        elevation: MarkerConstants.userLocationElevation,
+        shadowBlur: MarkerConstants.userLocationShadowBlur,
+        shadowSpread: MarkerConstants.userLocationShadowSpread,
+      ),
     );
   }
 
@@ -239,25 +246,32 @@ class MarkerStyles {
     MarkerSize size = MarkerSize.medium,
     bool isSelected = false,
   }) {
-    return ExpressiveMarkerHelper.createMarker(
+    final markerSize = ExpressiveMarkerHelper._getMarkerSize(size);
+
+    return Marker(
       point: point,
-      onTap: onTap,
-      iconData: iconData,
-      color: MarkerConstants.defaultIconColor,
-      backgroundColor:
-          backgroundColor ?? color ?? MarkerConstants.defaultMapPointColor,
-      borderColor: MarkerConstants.defaultBorderColor,
-      size: size,
-      isSelected: isSelected,
-      elevation: isSelected
-          ? MarkerConstants.selectedElevation
-          : MarkerConstants.defaultElevation,
-      shadowBlur: isSelected
-          ? MarkerConstants.selectedShadowBlur
-          : MarkerConstants.defaultShadowBlur,
-      shadowSpread: isSelected
-          ? MarkerConstants.selectedShadowSpread
-          : MarkerConstants.defaultShadowSpread,
+      width: markerSize,
+      height: markerSize,
+      child: AppMarker(
+        point: point,
+        onTap: onTap,
+        iconData: iconData,
+        color: MarkerConstants.defaultIconColor,
+        backgroundColor:
+            backgroundColor ?? color ?? MarkerConstants.defaultMapPointColor,
+        borderColor: MarkerConstants.defaultBorderColor,
+        size: size,
+        isSelected: isSelected,
+        elevation: isSelected
+            ? MarkerConstants.selectedElevation
+            : MarkerConstants.defaultElevation,
+        shadowBlur: isSelected
+            ? MarkerConstants.selectedShadowBlur
+            : MarkerConstants.defaultShadowBlur,
+        shadowSpread: isSelected
+            ? MarkerConstants.selectedShadowSpread
+            : MarkerConstants.defaultShadowSpread,
+      ),
     );
   }
 
@@ -267,18 +281,25 @@ class MarkerStyles {
     MarkerSize size = MarkerSize.medium,
     bool isSelected = false,
   }) {
-    return ExpressiveMarkerHelper.createMarker(
+    final markerSize = ExpressiveMarkerHelper._getMarkerSize(size);
+
+    return Marker(
       point: point,
-      onTap: onTap,
-      iconData: Icons.directions_bus,
-      color: MarkerConstants.defaultIconColor,
-      backgroundColor: MarkerConstants.defaultBusStopColor,
-      borderColor: MarkerConstants.defaultBorderColor,
-      size: size,
-      isSelected: isSelected,
-      elevation: isSelected
-          ? MarkerConstants.selectedElevation
-          : MarkerConstants.defaultElevation,
+      width: markerSize,
+      height: markerSize,
+      child: AppMarker(
+        point: point,
+        onTap: onTap,
+        iconData: Icons.directions_bus,
+        color: MarkerConstants.defaultIconColor,
+        backgroundColor: MarkerConstants.defaultBusStopColor,
+        borderColor: MarkerConstants.defaultBorderColor,
+        size: size,
+        isSelected: isSelected,
+        elevation: isSelected
+            ? MarkerConstants.selectedElevation
+            : MarkerConstants.defaultElevation,
+      ),
     );
   }
 
@@ -288,18 +309,150 @@ class MarkerStyles {
     MarkerSize size = MarkerSize.medium,
     bool isSelected = false,
   }) {
-    return ExpressiveMarkerHelper.createMarker(
+    final markerSize = ExpressiveMarkerHelper._getMarkerSize(size);
+
+    return Marker(
       point: point,
-      onTap: onTap,
-      iconData: Icons.landscape,
-      color: MarkerConstants.defaultIconColor,
-      backgroundColor: MarkerConstants.defaultLandmarkColor,
-      borderColor: MarkerConstants.defaultBorderColor,
-      size: size,
-      isSelected: isSelected,
-      elevation: isSelected
-          ? MarkerConstants.selectedElevation
-          : MarkerConstants.defaultElevation,
+      width: markerSize,
+      height: markerSize,
+      child: AppMarker(
+        point: point,
+        onTap: onTap,
+        iconData: Icons.landscape,
+        color: MarkerConstants.defaultIconColor,
+        backgroundColor: MarkerConstants.defaultLandmarkColor,
+        borderColor: MarkerConstants.defaultBorderColor,
+        size: size,
+        isSelected: isSelected,
+        elevation: isSelected
+            ? MarkerConstants.selectedElevation
+            : MarkerConstants.defaultElevation,
+      ),
+    );
+  }
+}
+
+/// Predefiniowane style markerów (deprecated - użyj MarkerExtensions)
+@Deprecated('Użyj Marker.userLocation() zamiast MarkerStyles.userLocation()')
+class MarkerStyles {
+  static Marker userLocation({
+    required LatLng point,
+    required VoidCallback onTap,
+    Color? color,
+    MarkerSize size = MarkerSize.medium,
+  }) {
+    final markerSize = ExpressiveMarkerHelper._getMarkerSize(size);
+
+    return Marker(
+      point: point,
+      width: markerSize,
+      height: markerSize,
+      child: AppMarker(
+        point: point,
+        onTap: onTap,
+        iconData: Icons.person,
+        color: MarkerConstants.defaultIconColor,
+        backgroundColor: color ?? MarkerConstants.defaultUserLocationColor,
+        borderColor: MarkerConstants.defaultBorderColor,
+        size: size,
+        elevation: MarkerConstants.userLocationElevation,
+        shadowBlur: MarkerConstants.userLocationShadowBlur,
+        shadowSpread: MarkerConstants.userLocationShadowSpread,
+      ),
+    );
+  }
+
+  static Marker mapPoint({
+    required LatLng point,
+    required VoidCallback onTap,
+    required IconData iconData,
+    Color? color,
+    Color? backgroundColor,
+    MarkerSize size = MarkerSize.medium,
+    bool isSelected = false,
+  }) {
+    final markerSize = ExpressiveMarkerHelper._getMarkerSize(size);
+
+    return Marker(
+      point: point,
+      width: markerSize,
+      height: markerSize,
+      child: AppMarker(
+        point: point,
+        onTap: onTap,
+        iconData: iconData,
+        color: MarkerConstants.defaultIconColor,
+        backgroundColor:
+            backgroundColor ?? color ?? MarkerConstants.defaultMapPointColor,
+        borderColor: MarkerConstants.defaultBorderColor,
+        size: size,
+        isSelected: isSelected,
+        elevation: isSelected
+            ? MarkerConstants.selectedElevation
+            : MarkerConstants.defaultElevation,
+        shadowBlur: isSelected
+            ? MarkerConstants.selectedShadowBlur
+            : MarkerConstants.defaultShadowBlur,
+        shadowSpread: isSelected
+            ? MarkerConstants.selectedShadowSpread
+            : MarkerConstants.defaultShadowSpread,
+      ),
+    );
+  }
+
+  static Marker busStop({
+    required LatLng point,
+    required VoidCallback onTap,
+    MarkerSize size = MarkerSize.medium,
+    bool isSelected = false,
+  }) {
+    final markerSize = ExpressiveMarkerHelper._getMarkerSize(size);
+
+    return Marker(
+      point: point,
+      width: markerSize,
+      height: markerSize,
+      child: AppMarker(
+        point: point,
+        onTap: onTap,
+        iconData: Icons.directions_bus,
+        color: MarkerConstants.defaultIconColor,
+        backgroundColor: MarkerConstants.defaultBusStopColor,
+        borderColor: MarkerConstants.defaultBorderColor,
+        size: size,
+        isSelected: isSelected,
+        elevation: isSelected
+            ? MarkerConstants.selectedElevation
+            : MarkerConstants.defaultElevation,
+      ),
+    );
+  }
+
+  static Marker landmark({
+    required LatLng point,
+    required VoidCallback onTap,
+    MarkerSize size = MarkerSize.medium,
+    bool isSelected = false,
+  }) {
+    final markerSize = ExpressiveMarkerHelper._getMarkerSize(size);
+
+    return Marker(
+      point: point,
+      width: markerSize,
+      height: markerSize,
+      child: AppMarker(
+        point: point,
+        onTap: onTap,
+        iconData: Icons.landscape,
+        color: MarkerConstants.defaultIconColor,
+        backgroundColor: MarkerConstants.defaultLandmarkColor,
+        borderColor: MarkerConstants.defaultBorderColor,
+        size: size,
+        isSelected: isSelected,
+        elevation: isSelected
+            ? MarkerConstants.selectedElevation
+            : MarkerConstants.defaultElevation,
+      ),
     );
   }
 }

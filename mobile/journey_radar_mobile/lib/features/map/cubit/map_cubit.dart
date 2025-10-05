@@ -21,8 +21,17 @@ class MapCubit extends Cubit<MapState> {
 
   Future<void> initialCubitLoad() async {
     await getCurrentLocation();
-    await getMapPoints();
-    await getBusRoutes();
+    await getGtfsRoutes();
+    await getGtfsStops();
+    await _loadGtfsShapesForAllRoutes();
+  }
+
+  Future<void> _loadGtfsShapesForAllRoutes() async {
+    if (state.gtfsRoutes == null) return;
+
+    for (final route in state.gtfsRoutes!) {
+      await getGtfsShapes(routeId: route.routeId);
+    }
   }
 
   Future<void> getCurrentLocation() async {
@@ -56,36 +65,38 @@ class MapCubit extends Cubit<MapState> {
     }
   }
 
-  Future<void> getMapPoints({
+
+  // GTFS operations
+  Future<void> getGtfsRoutes({
     int? limit,
     int? offset,
-    String? iconType,
+    String? routeType,
   }) async {
-    if (state.getMapPointsStatus == StateStatus.loading) return;
+    if (state.getGtfsRoutesStatus == StateStatus.loading) return;
 
     emit(state.copyWith(
-      getMapPointsStatus: StateStatus.loading,
+      getGtfsRoutesStatus: StateStatus.loading,
     ));
 
     try {
-      final result = await mapRepository.getMapPoints(
+      final result = await mapRepository.getGtfsRoutes(
         limit: limit,
         offset: offset,
-        iconType: iconType,
+        routeType: routeType,
       );
 
       switch (result) {
         case Success():
           {
             emit(state.copyWith(
-              getMapPointsStatus: StateStatus.success,
-              mapPoints: result.data,
+              getGtfsRoutesStatus: StateStatus.success,
+              gtfsRoutes: result.data,
             ));
           }
         case Failure(error: final exception):
           {
             emit(state.copyWith(
-              getMapPointsStatus: StateStatus.failure,
+              getGtfsRoutesStatus: StateStatus.failure,
               exception: exception,
             ));
           }
@@ -97,40 +108,42 @@ class MapCubit extends Cubit<MapState> {
         _ => StateStatus.failure,
       };
       emit(state.copyWith(
-        getMapPointsStatus: submissionStatus,
+        getGtfsRoutesStatus: submissionStatus,
         exception: error is Exception ? error : Exception(error.toString()),
       ));
     }
   }
 
-  Future<void> getBusRoutes({
+  Future<void> getGtfsStops({
     int? limit,
     int? offset,
+    String? stopId,
   }) async {
-    if (state.getBusRoutesStatus == StateStatus.loading) return;
+    if (state.getGtfsStopsStatus == StateStatus.loading) return;
 
     emit(state.copyWith(
-      getBusRoutesStatus: StateStatus.loading,
+      getGtfsStopsStatus: StateStatus.loading,
     ));
 
     try {
-      final result = await mapRepository.getBusRoutes(
+      final result = await mapRepository.getGtfsStops(
         limit: limit,
         offset: offset,
+        stopId: stopId,
       );
 
       switch (result) {
         case Success():
           {
             emit(state.copyWith(
-              getBusRoutesStatus: StateStatus.success,
-              busRoutes: result.data,
+              getGtfsStopsStatus: StateStatus.success,
+              gtfsStops: result.data,
             ));
           }
         case Failure(error: final exception):
           {
             emit(state.copyWith(
-              getBusRoutesStatus: StateStatus.failure,
+              getGtfsStopsStatus: StateStatus.failure,
               exception: exception,
             ));
           }
@@ -142,42 +155,36 @@ class MapCubit extends Cubit<MapState> {
         _ => StateStatus.failure,
       };
       emit(state.copyWith(
-        getBusRoutesStatus: submissionStatus,
+        getGtfsStopsStatus: submissionStatus,
         exception: error is Exception ? error : Exception(error.toString()),
       ));
     }
   }
 
-  Future<void> searchMapPoints({
-    required String query,
-    int? limit,
-    int? offset,
+  Future<void> getGtfsShapes({
+    required String routeId,
   }) async {
-    if (state.searchMapPointsStatus == StateStatus.loading) return;
+    if (state.getGtfsShapesStatus == StateStatus.loading) return;
 
     emit(state.copyWith(
-      searchMapPointsStatus: StateStatus.loading,
+      getGtfsShapesStatus: StateStatus.loading,
     ));
 
     try {
-      final result = await mapRepository.searchMapPoints(
-        query: query,
-        limit: limit,
-        offset: offset,
-      );
+      final result = await mapRepository.getGtfsShapes(routeId: routeId);
 
       switch (result) {
         case Success():
           {
             emit(state.copyWith(
-              searchMapPointsStatus: StateStatus.success,
-              searchResults: result.data,
+              getGtfsShapesStatus: StateStatus.success,
+              gtfsShapes: result.data,
             ));
           }
         case Failure(error: final exception):
           {
             emit(state.copyWith(
-              searchMapPointsStatus: StateStatus.failure,
+              getGtfsShapesStatus: StateStatus.failure,
               exception: exception,
             ));
           }
@@ -189,43 +196,36 @@ class MapCubit extends Cubit<MapState> {
         _ => StateStatus.failure,
       };
       emit(state.copyWith(
-        searchMapPointsStatus: submissionStatus,
+        getGtfsShapesStatus: submissionStatus,
         exception: error is Exception ? error : Exception(error.toString()),
       ));
     }
   }
 
-  Future<void> getNearbyMapPoints({
-    required LatLng position,
-    required double radiusKm,
-    int? limit,
-    int? offset,
+  Future<void> getGtfsStopsForRoute({
+    required String routeId,
   }) async {
-    if (state.getNearbyMapPointsStatus == StateStatus.loading) return;
+    if (state.getGtfsStopsStatus == StateStatus.loading) return;
 
     emit(state.copyWith(
-      getNearbyMapPointsStatus: StateStatus.loading,
+      getGtfsStopsStatus: StateStatus.loading,
     ));
 
     try {
-      final result = await mapRepository.getNearbyMapPoints(
-        location: position,
-        radius: radiusKm,
-        limit: limit,
-      );
+      final result = await mapRepository.getGtfsStopsForRoute(routeId: routeId);
 
       switch (result) {
         case Success():
           {
             emit(state.copyWith(
-              getNearbyMapPointsStatus: StateStatus.success,
-              nearbyMapPoints: result.data,
+              getGtfsStopsStatus: StateStatus.success,
+              gtfsStops: result.data,
             ));
           }
         case Failure(error: final exception):
           {
             emit(state.copyWith(
-              getNearbyMapPointsStatus: StateStatus.failure,
+              getGtfsStopsStatus: StateStatus.failure,
               exception: exception,
             ));
           }
@@ -237,31 +237,151 @@ class MapCubit extends Cubit<MapState> {
         _ => StateStatus.failure,
       };
       emit(state.copyWith(
-        getNearbyMapPointsStatus: submissionStatus,
+        getGtfsStopsStatus: submissionStatus,
         exception: error is Exception ? error : Exception(error.toString()),
       ));
     }
   }
 
-  void clearSearchResults() {
+  Future<void> getGtfsScheduleForStop({
+    required String stopId,
+    int? limit,
+  }) async {
+    if (state.getGtfsScheduleStatus == StateStatus.loading) return;
+
     emit(state.copyWith(
-      searchResults: [],
-      searchMapPointsStatus: StateStatus.initial,
+      getGtfsScheduleStatus: StateStatus.loading,
     ));
+
+    try {
+      final result = await mapRepository.getGtfsScheduleForStop(
+        stopId: stopId,
+        limit: limit,
+      );
+
+      switch (result) {
+        case Success():
+          {
+            emit(state.copyWith(
+              getGtfsScheduleStatus: StateStatus.success,
+              gtfsSchedule: result.data,
+            ));
+          }
+        case Failure(error: final exception):
+          {
+            emit(state.copyWith(
+              getGtfsScheduleStatus: StateStatus.failure,
+              exception: exception,
+            ));
+          }
+      }
+    } catch (error, stackTrace) {
+      addError(error, stackTrace);
+      final submissionStatus = switch (error) {
+        final TimeoutException _ => StateStatus.failure,
+        _ => StateStatus.failure,
+      };
+      emit(state.copyWith(
+        getGtfsScheduleStatus: submissionStatus,
+        exception: error is Exception ? error : Exception(error.toString()),
+      ));
+    }
   }
 
-  void clearNearbyResults() {
+  Future<void> getGtfsDelaysForRoute({
+    required String routeId,
+  }) async {
+    if (state.getGtfsDelaysStatus == StateStatus.loading) return;
+
     emit(state.copyWith(
-      nearbyMapPoints: [],
-      getNearbyMapPointsStatus: StateStatus.initial,
+      getGtfsDelaysStatus: StateStatus.loading,
     ));
+
+    try {
+      final result =
+          await mapRepository.getGtfsDelaysForRoute(routeId: routeId);
+
+      switch (result) {
+        case Success():
+          {
+            emit(state.copyWith(
+              getGtfsDelaysStatus: StateStatus.success,
+              gtfsDelays: result.data,
+            ));
+          }
+        case Failure(error: final exception):
+          {
+            emit(state.copyWith(
+              getGtfsDelaysStatus: StateStatus.failure,
+              exception: exception,
+            ));
+          }
+      }
+    } catch (error, stackTrace) {
+      addError(error, stackTrace);
+      final submissionStatus = switch (error) {
+        final TimeoutException _ => StateStatus.failure,
+        _ => StateStatus.failure,
+      };
+      emit(state.copyWith(
+        getGtfsDelaysStatus: submissionStatus,
+        exception: error is Exception ? error : Exception(error.toString()),
+      ));
+    }
   }
 
-  void setSelectedMapPoint(MapPointEntity? mapPoint) {
-    emit(state.copyWith(selectedMapPoint: mapPoint));
+  Future<void> getNearbyGtfsStops({
+    required LatLng location,
+    double? radius,
+    int? limit,
+  }) async {
+    if (state.getGtfsStopsStatus == StateStatus.loading) return;
+
+    emit(state.copyWith(
+      getGtfsStopsStatus: StateStatus.loading,
+    ));
+
+    try {
+      final result = await mapRepository.getNearbyGtfsStops(
+        location: location,
+        radius: radius,
+        limit: limit,
+      );
+
+      switch (result) {
+        case Success():
+          {
+            emit(state.copyWith(
+              getGtfsStopsStatus: StateStatus.success,
+              gtfsStops: result.data,
+            ));
+          }
+        case Failure(error: final exception):
+          {
+            emit(state.copyWith(
+              getGtfsStopsStatus: StateStatus.failure,
+              exception: exception,
+            ));
+          }
+      }
+    } catch (error, stackTrace) {
+      addError(error, stackTrace);
+      final submissionStatus = switch (error) {
+        final TimeoutException _ => StateStatus.failure,
+        _ => StateStatus.failure,
+      };
+      emit(state.copyWith(
+        getGtfsStopsStatus: submissionStatus,
+        exception: error is Exception ? error : Exception(error.toString()),
+      ));
+    }
   }
 
-  void setSelectedBusRoute(BusRouteEntity? busRoute) {
-    emit(state.copyWith(selectedBusRoute: busRoute));
+  void setSelectedGtfsStop(GtfsStopEntity? stop) {
+    emit(state.copyWith(selectedGtfsStop: stop));
+  }
+
+  void setSelectedGtfsRoute(GtfsRouteEntity? route) {
+    emit(state.copyWith(selectedGtfsRoute: route));
   }
 }

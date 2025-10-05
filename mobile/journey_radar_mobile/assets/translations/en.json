@@ -12,5 +12,6 @@
   "zoomOut": "Zoom out",
   "coordinates": "Coordinates",
   "createdAt": "Latitude",
-  "close": "Close"
+  "close": "Close",
+  "schedule": "Schedule"
 }

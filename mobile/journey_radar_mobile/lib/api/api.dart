@@ -104,4 +104,48 @@ abstract class Api {
     @Query('radius') double? radius,
     @Query('limit') int? limit,
   });
+
+  // GTFS endpoints
+  @GET('/api/gtfs/routes')
+  Future<HttpResponse<List<GtfsRouteDto>>> getGtfsRoutes({
+    @Query('limit') int? limit,
+    @Query('offset') int? offset,
+    @Query('routeType') String? routeType,
+  });
+
+  @GET('/api/gtfs/stops')
+  Future<HttpResponse<List<GtfsStopDto>>> getGtfsStops({
+    @Query('limit') int? limit,
+    @Query('offset') int? offset,
+    @Query('stopId') String? stopId,
+  });
+
+  @GET('/api/gtfs/shapes/{routeId}')
+  Future<HttpResponse<List<GtfsShapeDto>>> getGtfsShapes({
+    @Path('routeId') required String routeId,
+  });
+
+  @GET('/api/gtfs/routes/{routeId}/stops')
+  Future<HttpResponse<List<GtfsStopDto>>> getGtfsStopsForRoute({
+    @Path('routeId') required String routeId,
+  });
+
+  @GET('/api/gtfs/stops/{stopId}/schedule')
+  Future<HttpResponse<List<GtfsScheduleWithDelaysDto>>> getGtfsScheduleForStop({
+    @Path('stopId') required String stopId,
+    @Query('limit') int? limit,
+  });
+
+  @GET('/api/gtfs/routes/{routeId}/delays')
+  Future<HttpResponse<List<GtfsDelayDto>>> getGtfsDelaysForRoute({
+    @Path('routeId') required String routeId,
+  });
+
+  @GET('/api/gtfs/stops/nearby')
+  Future<HttpResponse<List<GtfsStopDto>>> getNearbyGtfsStops({
+    @Query('latitude') required double latitude,
+    @Query('longitude') required double longitude,
+    @Query('radius') double? radius,
+    @Query('limit') int? limit,
+  });
 }

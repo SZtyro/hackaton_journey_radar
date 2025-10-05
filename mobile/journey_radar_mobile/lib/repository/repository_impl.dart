@@ -1,10 +1,10 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:journey_radar_mobile/repository/repository.dart';
 import 'package:journey_radar_mobile/entity/entity.dart';
 import 'package:journey_radar_mobile/api/mock_map_api.dart';
+import 'package:journey_radar_mobile/api/api.dart';
+import 'package:journey_radar_mobile/dto/dto.dart';
 
 /// Implementation of Repository that can use either real API or mock API.
 class RepositoryImpl implements Repository {
@@ -12,6 +12,7 @@ class RepositoryImpl implements Repository {
     required this.useMockApi,
     this.dio,
     this.baseUrl,
+    this.api,
   });
 
   /// Flag to determine whether to use mock API or real API
@@ -23,6 +24,9 @@ class RepositoryImpl implements Repository {
   /// Base URL for real API (only used when useMockApi is false)
   final String? baseUrl;
 
+  /// API instance for real API calls (only used when useMockApi is false)
+  final Api? api;
+
   // Map Points operations
   @override
   Future<Result<List<MapPointEntity>, Exception>> getMapPoints({
@@ -31,9 +35,11 @@ class RepositoryImpl implements Repository {
     String? iconType,
   }) async {
     if (useMockApi) {
-      return _getMapPointsFromMock(limit: limit, offset: offset, iconType: iconType);
+      return _getMapPointsFromMock(
+          limit: limit, offset: offset, iconType: iconType);
     } else {
-      return _getMapPointsFromRealApi(limit: limit, offset: offset, iconType: iconType);
+      return _getMapPointsFromRealApi(
+          limit: limit, offset: offset, iconType: iconType);
     }
   }
 
@@ -89,9 +95,11 @@ class RepositoryImpl implements Repository {
     int? offset,
   }) async {
     if (useMockApi) {
-      return _searchMapPointsFromMock(query: query, limit: limit, offset: offset);
+      return _searchMapPointsFromMock(
+          query: query, limit: limit, offset: offset);
     } else {
-      return _searchMapPointsFromRealApi(query: query, limit: limit, offset: offset);
+      return _searchMapPointsFromRealApi(
+          query: query, limit: limit, offset: offset);
     }
   }
 
@@ -102,9 +110,11 @@ class RepositoryImpl implements Repository {
     int? limit,
   }) async {
     if (useMockApi) {
-      return _getNearbyMapPointsFromMock(location: location, radius: radius, limit: limit);
+      return _getNearbyMapPointsFromMock(
+          location: location, radius: radius, limit: limit);
     } else {
-      return _getNearbyMapPointsFromRealApi(location: location, radius: radius, limit: limit);
+      return _getNearbyMapPointsFromRealApi(
+          location: location, radius: radius, limit: limit);
     }
   }
 
@@ -116,9 +126,11 @@ class RepositoryImpl implements Repository {
     String? number,
   }) async {
     if (useMockApi) {
-      return _getBusRoutesFromMock(limit: limit, offset: offset, number: number);
+      return _getBusRoutesFromMock(
+          limit: limit, offset: offset, number: number);
     } else {
-      return _getBusRoutesFromRealApi(limit: limit, offset: offset, number: number);
+      return _getBusRoutesFromRealApi(
+          limit: limit, offset: offset, number: number);
     }
   }
 
@@ -174,9 +186,11 @@ class RepositoryImpl implements Repository {
     int? offset,
   }) async {
     if (useMockApi) {
-      return _searchBusRoutesFromMock(query: query, limit: limit, offset: offset);
+      return _searchBusRoutesFromMock(
+          query: query, limit: limit, offset: offset);
     } else {
-      return _searchBusRoutesFromRealApi(query: query, limit: limit, offset: offset);
+      return _searchBusRoutesFromRealApi(
+          query: query, limit: limit, offset: offset);
     }
   }
 
@@ -187,9 +201,11 @@ class RepositoryImpl implements Repository {
     int? limit,
   }) async {
     if (useMockApi) {
-      return _getNearbyBusRoutesFromMock(location: location, radius: radius, limit: limit);
+      return _getNearbyBusRoutesFromMock(
+          location: location, radius: radius, limit: limit);
     } else {
-      return _getNearbyBusRoutesFromRealApi(location: location, radius: radius, limit: limit);
+      return _getNearbyBusRoutesFromRealApi(
+          location: location, radius: radius, limit: limit);
     }
   }
 
@@ -410,43 +426,91 @@ class RepositoryImpl implements Repository {
     }
   }
 
-  // Real API implementations (placeholder - implement when needed)
+  // Real API implementations
   Future<Result<List<MapPointEntity>, Exception>> _getMapPointsFromRealApi({
     int? limit,
     int? offset,
     String? iconType,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getMapPoints(
+        limit: limit,
+        offset: offset,
+        iconType: iconType,
+      );
+
+      final mapPoints = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(mapPoints);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<MapPointEntity, Exception>> _getMapPointFromRealApi({
     required String id,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getMapPoint(id: id);
+      return Success(response.data.toEntity());
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<MapPointEntity, Exception>> _createMapPointFromRealApi({
     required MapPointEntity mapPoint,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final dto = MapPointDto.fromEntity(mapPoint);
+      final response = await api!.createMapPoint(mapPoint: dto);
+      return Success(response.data.toEntity());
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<MapPointEntity, Exception>> _updateMapPointFromRealApi({
     required String id,
     required MapPointEntity mapPoint,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final dto = MapPointDto.fromEntity(mapPoint);
+      final response = await api!.updateMapPoint(id: id, mapPoint: dto);
+      return Success(response.data.toEntity());
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<void, Exception>> _deleteMapPointFromRealApi({
     required String id,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      await api!.deleteMapPoint(id: id);
+      return const Success(null);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<List<MapPointEntity>, Exception>> _searchMapPointsFromRealApi({
@@ -454,17 +518,47 @@ class RepositoryImpl implements Repository {
     int? limit,
     int? offset,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.searchMapPoints(
+        query: query,
+        limit: limit,
+        offset: offset,
+      );
+
+      final mapPoints = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(mapPoints);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
-  Future<Result<List<MapPointEntity>, Exception>> _getNearbyMapPointsFromRealApi({
+  Future<Result<List<MapPointEntity>, Exception>>
+      _getNearbyMapPointsFromRealApi({
     required LatLng location,
     double? radius,
     int? limit,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getNearbyMapPoints(
+        latitude: location.latitude,
+        longitude: location.longitude,
+        radius: radius,
+        limit: limit,
+      );
+
+      final mapPoints = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(mapPoints);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<List<BusRouteEntity>, Exception>> _getBusRoutesFromRealApi({
@@ -472,37 +566,85 @@ class RepositoryImpl implements Repository {
     int? offset,
     String? number,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getBusRoutes(
+        limit: limit,
+        offset: offset,
+        number: number,
+      );
+
+      final busRoutes = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(busRoutes);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<BusRouteEntity, Exception>> _getBusRouteFromRealApi({
     required String id,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getBusRoute(id: id);
+      return Success(response.data.toEntity());
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<BusRouteEntity, Exception>> _createBusRouteFromRealApi({
     required BusRouteEntity busRoute,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final dto = BusRouteDto.fromEntity(busRoute);
+      final response = await api!.createBusRoute(busRoute: dto);
+      return Success(response.data.toEntity());
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<BusRouteEntity, Exception>> _updateBusRouteFromRealApi({
     required String id,
     required BusRouteEntity busRoute,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final dto = BusRouteDto.fromEntity(busRoute);
+      final response = await api!.updateBusRoute(id: id, busRoute: dto);
+      return Success(response.data.toEntity());
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<void, Exception>> _deleteBusRouteFromRealApi({
     required String id,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      await api!.deleteBusRoute(id: id);
+      return const Success(null);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
   Future<Result<List<BusRouteEntity>, Exception>> _searchBusRoutesFromRealApi({
@@ -510,16 +652,383 @@ class RepositoryImpl implements Repository {
     int? limit,
     int? offset,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.searchBusRoutes(
+        query: query,
+        limit: limit,
+        offset: offset,
+      );
+
+      final busRoutes = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(busRoutes);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 
-  Future<Result<List<BusRouteEntity>, Exception>> _getNearbyBusRoutesFromRealApi({
+  Future<Result<List<BusRouteEntity>, Exception>>
+      _getNearbyBusRoutesFromRealApi({
     required LatLng location,
     double? radius,
     int? limit,
   }) async {
-    // TODO: Implement real API call
-    return Failure(Exception('Real API not implemented yet'));
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getNearbyBusRoutes(
+        latitude: location.latitude,
+        longitude: location.longitude,
+        radius: radius,
+        limit: limit,
+      );
+
+      final busRoutes = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(busRoutes);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  // GTFS operations
+  @override
+  Future<Result<List<GtfsRouteEntity>, Exception>> getGtfsRoutes({
+    int? limit,
+    int? offset,
+    String? routeType,
+  }) async {
+    if (useMockApi) {
+      return _getGtfsRoutesFromMock(
+          limit: limit, offset: offset, routeType: routeType);
+    } else {
+      return _getGtfsRoutesFromRealApi(
+          limit: limit, offset: offset, routeType: routeType);
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsStopEntity>, Exception>> getGtfsStops({
+    int? limit,
+    int? offset,
+    String? stopId,
+  }) async {
+    if (useMockApi) {
+      return _getGtfsStopsFromMock(
+          limit: limit, offset: offset, stopId: stopId);
+    } else {
+      return _getGtfsStopsFromRealApi(
+          limit: limit, offset: offset, stopId: stopId);
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsShapeEntity>, Exception>> getGtfsShapes({
+    required String routeId,
+  }) async {
+    if (useMockApi) {
+      return _getGtfsShapesFromMock(routeId: routeId);
+    } else {
+      return _getGtfsShapesFromRealApi(routeId: routeId);
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsStopEntity>, Exception>> getGtfsStopsForRoute({
+    required String routeId,
+  }) async {
+    if (useMockApi) {
+      return _getGtfsStopsForRouteFromMock(routeId: routeId);
+    } else {
+      return _getGtfsStopsForRouteFromRealApi(routeId: routeId);
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsScheduleWithDelaysEntity>, Exception>>
+      getGtfsScheduleForStop({
+    required String stopId,
+    int? limit,
+  }) async {
+    if (useMockApi) {
+      return _getGtfsScheduleForStopFromMock(stopId: stopId, limit: limit);
+    } else {
+      return _getGtfsScheduleForStopFromRealApi(stopId: stopId, limit: limit);
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsDelayEntity>, Exception>> getGtfsDelaysForRoute({
+    required String routeId,
+  }) async {
+    if (useMockApi) {
+      return _getGtfsDelaysForRouteFromMock(routeId: routeId);
+    } else {
+      return _getGtfsDelaysForRouteFromRealApi(routeId: routeId);
+    }
+  }
+
+  @override
+  Future<Result<List<GtfsStopEntity>, Exception>> getNearbyGtfsStops({
+    required LatLng location,
+    double? radius,
+    int? limit,
+  }) async {
+    if (useMockApi) {
+      return _getNearbyGtfsStopsFromMock(
+          location: location, radius: radius, limit: limit);
+    } else {
+      return _getNearbyGtfsStopsFromRealApi(
+          location: location, radius: radius, limit: limit);
+    }
+  }
+
+  // GTFS Mock API implementations
+  Future<Result<List<GtfsRouteEntity>, Exception>> _getGtfsRoutesFromMock({
+    int? limit,
+    int? offset,
+    String? routeType,
+  }) async {
+    try {
+      final routes = await MockMapApi.getGtfsRoutes(
+        limit: limit,
+        offset: offset,
+        routeType: routeType,
+      );
+      return Success(routes);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsStopEntity>, Exception>> _getGtfsStopsFromMock({
+    int? limit,
+    int? offset,
+    String? stopId,
+  }) async {
+    try {
+      final stops = await MockMapApi.getGtfsStops(
+        limit: limit,
+        offset: offset,
+        stopId: stopId,
+      );
+      return Success(stops);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsShapeEntity>, Exception>> _getGtfsShapesFromMock({
+    required String routeId,
+  }) async {
+    try {
+      final shapes = await MockMapApi.getGtfsShapes(routeId: routeId);
+      return Success(shapes);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsStopEntity>, Exception>>
+      _getGtfsStopsForRouteFromMock({
+    required String routeId,
+  }) async {
+    try {
+      final stops = await MockMapApi.getGtfsStopsForRoute(routeId: routeId);
+      return Success(stops);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsScheduleWithDelaysEntity>, Exception>>
+      _getGtfsScheduleForStopFromMock({
+    required String stopId,
+    int? limit,
+  }) async {
+    try {
+      final schedule =
+          await MockMapApi.getGtfsScheduleForStop(stopId: stopId, limit: limit);
+      return Success(schedule);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsDelayEntity>, Exception>>
+      _getGtfsDelaysForRouteFromMock({
+    required String routeId,
+  }) async {
+    try {
+      final delays = await MockMapApi.getGtfsDelaysForRoute(routeId: routeId);
+      return Success(delays);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsStopEntity>, Exception>> _getNearbyGtfsStopsFromMock({
+    required LatLng location,
+    double? radius,
+    int? limit,
+  }) async {
+    try {
+      final stops = await MockMapApi.getNearbyGtfsStops(
+        location: location,
+        radius: radius,
+        limit: limit,
+      );
+      return Success(stops);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  // GTFS Real API implementations
+  Future<Result<List<GtfsRouteEntity>, Exception>> _getGtfsRoutesFromRealApi({
+    int? limit,
+    int? offset,
+    String? routeType,
+  }) async {
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getGtfsRoutes(
+        limit: limit,
+        offset: offset,
+        routeType: routeType,
+      );
+
+      final routes = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(routes);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsStopEntity>, Exception>> _getGtfsStopsFromRealApi({
+    int? limit,
+    int? offset,
+    String? stopId,
+  }) async {
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getGtfsStops(
+        limit: limit,
+        offset: offset,
+        stopId: stopId,
+      );
+
+      final stops = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(stops);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsShapeEntity>, Exception>> _getGtfsShapesFromRealApi({
+    required String routeId,
+  }) async {
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getGtfsShapes(routeId: routeId);
+      final shapes = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(shapes);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsStopEntity>, Exception>>
+      _getGtfsStopsForRouteFromRealApi({
+    required String routeId,
+  }) async {
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getGtfsStopsForRoute(routeId: routeId);
+      final stops = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(stops);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsScheduleWithDelaysEntity>, Exception>>
+      _getGtfsScheduleForStopFromRealApi({
+    required String stopId,
+    int? limit,
+  }) async {
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getGtfsScheduleForStop(
+        stopId: stopId,
+        limit: limit,
+      );
+
+      final schedule = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(schedule);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsDelayEntity>, Exception>>
+      _getGtfsDelaysForRouteFromRealApi({
+    required String routeId,
+  }) async {
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getGtfsDelaysForRoute(routeId: routeId);
+      final delays = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(delays);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
+  }
+
+  Future<Result<List<GtfsStopEntity>, Exception>>
+      _getNearbyGtfsStopsFromRealApi({
+    required LatLng location,
+    double? radius,
+    int? limit,
+  }) async {
+    try {
+      if (api == null) {
+        return Failure(Exception('API instance not available'));
+      }
+
+      final response = await api!.getNearbyGtfsStops(
+        latitude: location.latitude,
+        longitude: location.longitude,
+        radius: radius,
+        limit: limit,
+      );
+
+      final stops = response.data.map((dto) => dto.toEntity()).toList();
+      return Success(stops);
+    } on Exception catch (exception) {
+      return Failure(exception);
+    }
   }
 }
