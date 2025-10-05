@@ -50,7 +50,10 @@ class SettingsContent extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: AppSpacing.m),
+                      SizedBox(
+                        height: AppSpacing.m,
+                        width: double.maxFinite,
+                      ),
                       SegmentedButton<ThemeMode>(
                         segments: const [
                           ButtonSegment<ThemeMode>(
@@ -107,9 +110,7 @@ class SettingsContent extends StatelessWidget {
                   ),
                 ),
               ),
-
               SizedBox(height: AppSpacing.m),
-
               Card(
                 child: Padding(
                   padding: EdgeInsets.all(AppSpacing.m),
@@ -158,34 +159,6 @@ class SettingsContent extends StatelessWidget {
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: AppSpacing.m,
                             vertical: AppSpacing.xs,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: AppSpacing.m),
-
-              // Theme Information Card
-              Card(
-                color: Colors.blue.shade50,
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.m),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Colors.blue.shade700,
-                      ),
-                      SizedBox(width: AppSpacing.ms),
-                      Expanded(
-                        child: Text(
-                          'Zmiany motywu są zapisywane automatycznie i będą widoczne w całej aplikacji.',
-                          style: TextStyle(
-                            color: Colors.blue.shade700,
-                            fontSize: FontConstants.fontSizeXS,
                           ),
                         ),
                       ),
