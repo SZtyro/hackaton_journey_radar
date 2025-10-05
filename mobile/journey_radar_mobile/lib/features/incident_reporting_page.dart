@@ -73,6 +73,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   // Keys for scroll targets
   final GlobalKey _routeCardKey = GlobalKey();
   final GlobalKey _stationCardKey = GlobalKey();
+  final GlobalKey _locationCardKey = GlobalKey();
 
   IncidentType? _selectedIncidentType;
   String? _selectedRoute;
@@ -612,6 +613,11 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
                             setState(() {
                               _selectedStation = value;
                             });
+                            // Auto-scroll to location card after a short delay
+                            Future.delayed(const Duration(milliseconds: 100),
+                                () {
+                              _scrollToWidget(_locationCardKey);
+                            });
                           },
                         ),
                       ],
@@ -623,6 +629,7 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
 
                 // Location section - always visible
                 Card(
+                  key: _locationCardKey,
                   child: Padding(
                     padding: EdgeInsets.all(AppSpacing.m),
                     child: Column(
