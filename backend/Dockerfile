@@ -1,6 +1,6 @@
-# Stage 1: Build the application using a stable Eclipse Temurin JDK image
-# This image includes Maven and the Java Development Kit.
-FROM eclipse-temurin:17-jdk-jammy AS builder
+# Stage 1: Build the application using the OFFICIAL MAVEN image
+# THIS IS THE FIX: This image is guaranteed to have the 'mvn' command.
+FROM maven:3.8-openjdk-17 AS builder
 
 WORKDIR /app
 # Copy only the pom.xml first to leverage Docker layer caching
@@ -13,7 +13,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Create the final, small image using only the Java Runtime Environment
-# This is a stable and verified image tag.
+# This part is correct and stays the same.
 FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
