@@ -312,6 +312,7 @@ class _MapPageViewState extends State<_MapPageView> {
         return Scaffold(
           appBar: AppBar(
             title: Text(AppConstants.appName),
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             actions: [
               AppIcon(
                 icon: state.getLocationStatus == StateStatus.loading
