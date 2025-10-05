@@ -9,6 +9,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class GtfsRealTimeService {
@@ -97,16 +99,15 @@ public class GtfsRealTimeService {
                 // Get the schedule relationship
                 String scheduleRelationship = tripUpdate.getTrip().getScheduleRelationship().name();
 
-                // Extract delay information from stop time updates
+                // Get the delay from stop time updates - we need at least one stop time update
                 int delay = 0;
                 if (!tripUpdate.getStopTimeUpdateList().isEmpty()) {
-                    // Get the delay from the first stop time update (most relevant)
-                    GtfsRealtime.TripUpdate.StopTimeUpdate firstStopUpdate = tripUpdate.getStopTimeUpdateList().get(0);
-
-                    if (firstStopUpdate.hasArrival() && firstStopUpdate.getArrival().hasDelay()) {
-                        delay = firstStopUpdate.getArrival().getDelay();
-                    } else if (firstStopUpdate.hasDeparture() && firstStopUpdate.getDeparture().hasDelay()) {
-                        delay = firstStopUpdate.getDeparture().getDelay();
+                    // Get the delay from the first stop time update
+                    GtfsRealtime.TripUpdate.StopTimeUpdate stopTimeUpdate = tripUpdate.getStopTimeUpdate(0);
+                    if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasDelay()) {
+                        delay = stopTimeUpdate.getArrival().getDelay();
+                    } else if (stopTimeUpdate.hasDeparture() && stopTimeUpdate.getDeparture().hasDelay()) {
+                        delay = stopTimeUpdate.getDeparture().getDelay();
                     }
                 }
 
@@ -115,5 +116,80 @@ public class GtfsRealTimeService {
         }
         log.info("Successfully parsed {} trip updates.", tripUpdates.size());
         return tripUpdates;
+    }
+
+    /**
+     * Fetches and combines vehicle positions with trip updates to create comprehensive current state data.
+     * @return A list of vehicle current state objects combining position and delay information.
+     * @throws IOException if the data cannot be fetched or parsed.
+     */
+    public List<VehicleCurrentState> fetchVehicleCurrentState() throws IOException {
+        log.info("Fetching comprehensive vehicle current state data");
+
+        // Fetch both position and trip update data
+        List<SimpleVehiclePosition> positions = fetchVehiclePositions();
+        List<SimpleTripUpdate> tripUpdates = fetchTripUpdates();
+
+        // Create a map of trip updates indexed by trip ID for fast lookup
+        Map<String, SimpleTripUpdate> tripUpdateMap = tripUpdates.stream()
+                .collect(Collectors.toMap(SimpleTripUpdate::tripId, update -> update, (existing, replacement) -> existing));
+
+        List<VehicleCurrentState> currentStates = new ArrayList<>();
+
+        // Combine position data with trip update data
+        for (SimpleVehiclePosition position : positions) {
+            SimpleTripUpdate tripUpdate = tripUpdateMap.get(position.tripId());
+            VehicleCurrentState currentState = VehicleCurrentState.from(position, tripUpdate);
+
+            // Only add valid vehicle states
+            if (currentState.isValid()) {
+                currentStates.add(currentState);
+            }
+        }
+
+        log.info("Successfully created {} vehicle current states from {} positions and {} trip updates",
+                 currentStates.size(), positions.size(), tripUpdates.size());
+        return currentStates;
+    }
+
+    /**
+     * Filters vehicles within a specified radius from given coordinates.
+     * @param vehicles List of vehicles to filter
+     * @param userLat User's latitude
+     * @param userLon User's longitude
+     * @param radiusKm Radius in kilometers
+     * @return Filtered list of vehicles within the radius
+     */
+    public List<VehicleCurrentState> filterVehiclesByRadius(List<VehicleCurrentState> vehicles,
+                                                           double userLat, double userLon, double radiusKm) {
+        return vehicles.stream()
+                .filter(vehicle -> {
+                    double distance = calculateDistance(userLat, userLon, vehicle.latitude(), vehicle.longitude());
+                    return distance <= radiusKm;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Calculates the distance between two GPS coordinates using the Haversine formula.
+     * @param lat1 First latitude
+     * @param lon1 First longitude
+     * @param lat2 Second latitude
+     * @param lon2 Second longitude
+     * @return Distance in kilometers
+     */
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int EARTH_RADIUS_KM = 6371;
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS_KM * c;
     }
 }

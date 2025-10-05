@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.drunkcom.core.service.GtfsRealTimeService;
 import pl.drunkcom.core.service.SimpleVehiclePosition;
 import pl.drunkcom.core.service.SimpleTripUpdate;
+import pl.drunkcom.core.service.VehicleCurrentState;
 
 import java.io.IOException;
 import java.util.List;
@@ -313,22 +314,22 @@ public class VehiclePositionController {
     }
 
     /**
-     * Retrieves only significantly delayed trips (more than 5 minutes late).
-     * Filters trip updates to show only those with substantial delays.
+     * Retrieves all buses with extended delay information.
+     * Returns all active trips with their delay status for comprehensive frontend display.
      *
-     * @return ResponseEntity containing list of significantly delayed trips
+     * @return ResponseEntity containing list of all trips with delay information
      */
     @GetMapping("/delays")
     @Operation(
-        summary = "Get significantly delayed trips",
-        description = "Retrieves trip updates filtered to show only significantly delayed trips (more than 5 minutes late). " +
-                     "This endpoint is useful for monitoring service disruptions and identifying problematic routes. " +
-                     "Helps transit operators and passengers focus on the most impactful delays."
+        summary = "Get all buses with delay information",
+        description = "Retrieves all active trip updates including delay information for every bus (both on-time and delayed). " +
+                     "This endpoint provides extended data with delay status for all vehicles in the system. " +
+                     "Perfect for frontend applications that need to display comprehensive delay information for all buses."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved delayed trips",
+            description = "Successfully retrieved all trips with delay information",
             content = @Content(schema = @Schema(implementation = SimpleTripUpdate.class))
         ),
         @ApiResponse(
@@ -338,14 +339,57 @@ public class VehiclePositionController {
     })
     public ResponseEntity<List<SimpleTripUpdate>> getDelayedTrips() {
         try {
-            log.info("Fetching significantly delayed trips");
+            log.info("Fetching all trips with delay information");
+            List<SimpleTripUpdate> allUpdates = gtfsRealTimeService.fetchTripUpdates();
+
+            // Return ALL trips (both delayed and on-time) - no filtering
+            log.info("Successfully retrieved {} trips with delay information", allUpdates.size());
+            return ResponseEntity.ok(allUpdates);
+
+        } catch (IOException e) {
+            log.error("Failed to fetch trip delay information due to I/O error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching trip delay information", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Retrieves only delayed trips (positive delay only).
+     * Filters to show only buses that are running behind schedule.
+     *
+     * @return ResponseEntity containing list of only delayed trips
+     */
+    @GetMapping("/delays/only-delayed")
+    @Operation(
+        summary = "Get only delayed trips",
+        description = "Retrieves trip updates filtered to show only buses with positive delays. " +
+                     "This endpoint shows only buses running behind schedule, excluding on-time vehicles. " +
+                     "Useful for monitoring service disruptions and identifying problem areas."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved only delayed trips",
+            content = @Content(schema = @Schema(implementation = SimpleTripUpdate.class))
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error - failed to fetch trip updates"
+        )
+    })
+    public ResponseEntity<List<SimpleTripUpdate>> getOnlyDelayedTrips() {
+        try {
+            log.info("Fetching only delayed trips");
             List<SimpleTripUpdate> allUpdates = gtfsRealTimeService.fetchTripUpdates();
 
             List<SimpleTripUpdate> delayedTrips = allUpdates.stream()
-                    .filter(SimpleTripUpdate::isSignificantlyDelayed)
+                    .filter(update -> update.delay() > 0) // Only positive delays
                     .collect(Collectors.toList());
 
-            log.info("Found {} significantly delayed trips out of {} total", delayedTrips.size(), allUpdates.size());
+            log.info("Found {} delayed trips out of {} total", delayedTrips.size(), allUpdates.size());
             return ResponseEntity.ok(delayedTrips);
 
         } catch (IOException e) {
@@ -359,124 +403,22 @@ public class VehiclePositionController {
     }
 
     /**
-     * Gets trip updates for a specific route.
-     * Returns delay information filtered by route ID.
+     * Retrieves complete current state of all vehicles (positions + delay info combined).
+     * Returns comprehensive data combining vehicle locations with their delay status.
      *
-     * @param routeId The route identifier to filter by
-     * @return ResponseEntity containing trip updates for the specified route
+     * @return ResponseEntity containing list of vehicle current states
      */
-    @GetMapping("/trip-updates/route/{routeId}")
+    @GetMapping("/current-state")
     @Operation(
-        summary = "Get trip updates by route",
-        description = "Retrieves trip updates filtered by a specific route ID. " +
-                     "Useful for monitoring delays and performance on a particular transit route. " +
-                     "Returns all trip updates (delayed and on-time) for the specified route."
+        summary = "Get complete current state of all vehicles",
+        description = "Retrieves comprehensive current state data combining vehicle positions with trip updates. " +
+                     "Each entry includes location coordinates, delay information, route details, and schedule status. " +
+                     "This endpoint provides the most complete view of the transit system's current operational state."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved trip updates for the route",
-            content = @Content(schema = @Schema(implementation = SimpleTripUpdate.class))
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid route ID format"
-        ),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error - failed to fetch trip updates"
-        )
-    })
-    public ResponseEntity<List<SimpleTripUpdate>> getTripUpdatesByRoute(
-        @Parameter(description = "Route identifier to filter by", example = "ROUTE_001")
-        @PathVariable String routeId
-    ) {
-        try {
-            log.info("Fetching trip updates for route: {}", routeId);
-            List<SimpleTripUpdate> allUpdates = gtfsRealTimeService.fetchTripUpdates();
-
-            List<SimpleTripUpdate> routeUpdates = allUpdates.stream()
-                    .filter(update -> routeId.equals(update.routeId()))
-                    .collect(Collectors.toList());
-
-            log.info("Found {} trip updates for route {}", routeUpdates.size(), routeId);
-            return ResponseEntity.ok(routeUpdates);
-
-        } catch (IOException e) {
-            log.error("Failed to fetch trip updates for route {} due to I/O error", routeId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-
-        } catch (Exception e) {
-            log.error("Unexpected error while fetching trip updates for route {}", routeId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Gets count of delayed trips.
-     * Returns the number of trips that are currently running behind schedule.
-     *
-     * @return ResponseEntity containing count of delayed trips
-     */
-    @GetMapping("/delays/count")
-    @Operation(
-        summary = "Get count of delayed trips",
-        description = "Returns the total number of trips currently running behind schedule (any positive delay). " +
-                     "Provides a quick metric for overall system performance and service reliability."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved delayed trip count",
-            content = @Content(schema = @Schema(type = "integer", example = "42"))
-        ),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error - failed to fetch trip data"
-        )
-    })
-    public ResponseEntity<Integer> getDelayedTripsCount() {
-        try {
-            log.info("Fetching delayed trips count");
-            List<SimpleTripUpdate> allUpdates = gtfsRealTimeService.fetchTripUpdates();
-
-            int delayedCount = (int) allUpdates.stream()
-                    .filter(update -> update.delay() > 0)
-                    .count();
-
-            log.info("Current delayed trips count: {}", delayedCount);
-            return ResponseEntity.ok(delayedCount);
-
-        } catch (IOException e) {
-            log.error("Failed to fetch delayed trips count due to I/O error", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-
-        } catch (Exception e) {
-            log.error("Unexpected error while fetching delayed trips count", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Retrieves vehicle positions within a specified radius from user coordinates.
-     * Returns real-time location data filtered by distance from the specified point.
-     *
-     * @param latitude User's latitude coordinate
-     * @param longitude User's longitude coordinate
-     * @param radiusKm Radius in kilometers to search within
-     * @return ResponseEntity containing list of vehicle positions within the specified radius
-     */
-    @GetMapping("/positions/nearby")
-    @Operation(
-        summary = "Get vehicle positions within radius",
-        description = "Retrieves real-time positions of public transit vehicles within a specified radius " +
-                     "from the provided coordinates. Useful for finding nearby vehicles and transit options. " +
-                     "Distance calculation uses the Haversine formula for accurate geographic distances."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved nearby vehicle positions",
+            description = "Successfully retrieved vehicle current states",
             content = @Content(
                 schema = @Schema(
                     type = "array",
@@ -485,13 +427,62 @@ public class VehiclePositionController {
                           {
                             "vehicleId": "M:401",
                             "tripId": "30876679_256163",
+                            "routeId": "160013",
                             "latitude": 50.0647,
-                            "longitude": 19.9450
+                            "longitude": 19.9450,
+                            "delay": 22,
+                            "scheduleRelationship": "SCHEDULED",
+                            "delayDescription": "On time"
                           }
                         ]
                         """
                 )
             )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error - failed to fetch vehicle data"
+        )
+    })
+    public ResponseEntity<List<VehicleCurrentState>> getCurrentState() {
+        try {
+            log.info("Fetching complete vehicle current state");
+            List<VehicleCurrentState> currentStates = gtfsRealTimeService.fetchVehicleCurrentState();
+
+            log.info("Successfully retrieved {} vehicle current states", currentStates.size());
+            return ResponseEntity.ok(currentStates);
+
+        } catch (IOException e) {
+            log.error("Failed to fetch vehicle current state due to I/O error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching vehicle current state", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Retrieves complete current state of vehicles within a specified radius.
+     * Returns comprehensive data combining vehicle locations with their delay status for nearby vehicles.
+     *
+     * @param latitude User's latitude coordinate
+     * @param longitude User's longitude coordinate
+     * @param radiusKm Radius in kilometers to search within
+     * @return ResponseEntity containing list of nearby vehicle current states
+     */
+    @GetMapping("/current-state/nearby")
+    @Operation(
+        summary = "Get current state of nearby vehicles",
+        description = "Retrieves comprehensive current state data for vehicles within a specified radius. " +
+                     "Combines position and delay information for vehicles near the specified coordinates. " +
+                     "Perfect for mobile apps showing nearby transit options with real-time status."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved nearby vehicle current states",
+            content = @Content(schema = @Schema(implementation = VehicleCurrentState.class))
         ),
         @ApiResponse(
             responseCode = "400",
@@ -502,7 +493,7 @@ public class VehiclePositionController {
             description = "Internal server error - failed to fetch vehicle data"
         )
     })
-    public ResponseEntity<List<SimpleVehiclePosition>> getNearbyVehiclePositions(
+    public ResponseEntity<List<VehicleCurrentState>> getNearbyCurrentState(
         @Parameter(description = "User's latitude coordinate", example = "50.0647")
         @RequestParam double latitude,
         @Parameter(description = "User's longitude coordinate", example = "19.9450")
@@ -511,22 +502,102 @@ public class VehiclePositionController {
         @RequestParam double radiusKm
     ) {
         try {
-            // Validate parameters
-            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-                return ResponseEntity.badRequest().build();
-            }
-            if (radiusKm <= 0 || radiusKm > 100) { // Max 100km radius
+            log.info("Fetching nearby vehicle current states within {}km of coordinates [{}, {}]",
+                    radiusKm, latitude, longitude);
+
+            // Validate input parameters
+            if (latitude < -90.0 || latitude > 90.0 || longitude < -180.0 || longitude > 180.0) {
+                log.warn("Invalid coordinates provided: lat={}, lon={}", latitude, longitude);
                 return ResponseEntity.badRequest().build();
             }
 
-            log.info("Fetching vehicle positions within {}km of coordinates ({}, {})", radiusKm, latitude, longitude);
+            if (radiusKm <= 0 || radiusKm > 100) {
+                log.warn("Invalid radius provided: {}km", radiusKm);
+                return ResponseEntity.badRequest().build();
+            }
+
+            List<VehicleCurrentState> allStates = gtfsRealTimeService.fetchVehicleCurrentState();
+            List<VehicleCurrentState> nearbyStates = gtfsRealTimeService.filterVehiclesByRadius(
+                allStates, latitude, longitude, radiusKm);
+
+            log.info("Found {} nearby vehicles out of {} total within {}km radius",
+                    nearbyStates.size(), allStates.size(), radiusKm);
+            return ResponseEntity.ok(nearbyStates);
+
+        } catch (IOException e) {
+            log.error("Failed to fetch nearby vehicle current state due to I/O error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching nearby vehicle current state", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Retrieves vehicle positions within a specified radius.
+     * Returns position data for vehicles near the specified coordinates.
+     *
+     * @param latitude User's latitude coordinate
+     * @param longitude User's longitude coordinate
+     * @param radiusKm Radius in kilometers to search within
+     * @return ResponseEntity containing list of nearby vehicle positions
+     */
+    @GetMapping("/positions/nearby")
+    @Operation(
+        summary = "Get nearby vehicle positions",
+        description = "Retrieves vehicle positions for vehicles within a specified radius. " +
+                     "Returns only position data (coordinates, vehicle ID, trip ID) for nearby vehicles. " +
+                     "Useful for map displays showing vehicle locations in a specific area."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved nearby vehicle positions",
+            content = @Content(schema = @Schema(implementation = SimpleVehiclePosition.class))
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid coordinates or radius parameters"
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error - failed to fetch vehicle data"
+        )
+    })
+    public ResponseEntity<List<SimpleVehiclePosition>> getNearbyPositions(
+        @Parameter(description = "User's latitude coordinate", example = "50.0647")
+        @RequestParam double latitude,
+        @Parameter(description = "User's longitude coordinate", example = "19.9450")
+        @RequestParam double longitude,
+        @Parameter(description = "Search radius in kilometers", example = "2.0")
+        @RequestParam double radiusKm
+    ) {
+        try {
+            log.info("Fetching nearby vehicle positions within {}km of coordinates [{}, {}]",
+                    radiusKm, latitude, longitude);
+
+            // Validate input parameters
+            if (latitude < -90.0 || latitude > 90.0 || longitude < -180.0 || longitude > 180.0) {
+                log.warn("Invalid coordinates provided: lat={}, lon={}", latitude, longitude);
+                return ResponseEntity.badRequest().build();
+            }
+
+            if (radiusKm <= 0 || radiusKm > 100) {
+                log.warn("Invalid radius provided: {}km", radiusKm);
+                return ResponseEntity.badRequest().build();
+            }
+
             List<SimpleVehiclePosition> allPositions = gtfsRealTimeService.fetchVehiclePositions();
-
             List<SimpleVehiclePosition> nearbyPositions = allPositions.stream()
-                    .filter(position -> calculateDistance(latitude, longitude, position.latitude(), position.longitude()) <= radiusKm)
-                    .collect(Collectors.toList());
+                .filter(position -> {
+                    double distance = calculateDistance(latitude, longitude, position.latitude(), position.longitude());
+                    return distance <= radiusKm;
+                })
+                .collect(Collectors.toList());
 
-            log.info("Found {} nearby vehicles out of {} total within {}km radius", nearbyPositions.size(), allPositions.size(), radiusKm);
+            log.info("Found {} nearby vehicle positions out of {} total within {}km radius",
+                    nearbyPositions.size(), allPositions.size(), radiusKm);
             return ResponseEntity.ok(nearbyPositions);
 
         } catch (IOException e) {
@@ -540,41 +611,26 @@ public class VehiclePositionController {
     }
 
     /**
-     * Retrieves delayed trips within a specified radius from user coordinates.
-     * Returns delay information filtered by distance and delay status.
+     * Retrieves trip delays within a specified radius.
+     * Returns delay information for trips near the specified coordinates.
      *
      * @param latitude User's latitude coordinate
      * @param longitude User's longitude coordinate
      * @param radiusKm Radius in kilometers to search within
-     * @return ResponseEntity containing list of delayed trips within the specified radius
+     * @return ResponseEntity containing list of nearby trip delays
      */
     @GetMapping("/delays/nearby")
     @Operation(
-        summary = "Get delayed trips within radius",
-        description = "Retrieves significantly delayed trips within a specified radius from the provided coordinates. " +
-                     "Combines delay filtering (>5 minutes) with geographic proximity to show relevant delays. " +
-                     "Useful for passengers to see delays affecting their immediate area."
+        summary = "Get nearby trip delays",
+        description = "Retrieves trip delay information for vehicles within a specified radius. " +
+                     "Returns delay data for trips near the specified coordinates. " +
+                     "Useful for monitoring service disruptions in a specific area."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved nearby delayed trips",
-            content = @Content(
-                schema = @Schema(
-                    type = "array",
-                    example = """
-                        [
-                          {
-                            "tripId": "30876679_256163",
-                            "routeId": "160013",
-                            "vehicleId": "M:401",
-                            "delay": 420,
-                            "scheduleRelationship": "SCHEDULED"
-                          }
-                        ]
-                        """
-                )
-            )
+            description = "Successfully retrieved nearby trip delays",
+            content = @Content(schema = @Schema(implementation = SimpleTripUpdate.class))
         ),
         @ApiResponse(
             responseCode = "400",
@@ -582,10 +638,10 @@ public class VehiclePositionController {
         ),
         @ApiResponse(
             responseCode = "500",
-            description = "Internal server error - failed to fetch delay data"
+            description = "Internal server error - failed to fetch trip data"
         )
     })
-    public ResponseEntity<List<SimpleTripUpdate>> getNearbyDelayedTrips(
+    public ResponseEntity<List<SimpleTripUpdate>> getNearbyDelays(
         @Parameter(description = "User's latitude coordinate", example = "50.0647")
         @RequestParam double latitude,
         @Parameter(description = "User's longitude coordinate", example = "19.9450")
@@ -594,53 +650,50 @@ public class VehiclePositionController {
         @RequestParam double radiusKm
     ) {
         try {
-            // Validate parameters
-            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            log.info("Fetching nearby trip delays within {}km of coordinates [{}, {}]",
+                    radiusKm, latitude, longitude);
+
+            // Validate input parameters
+            if (latitude < -90.0 || latitude > 90.0 || longitude < -180.0 || longitude > 180.0) {
+                log.warn("Invalid coordinates provided: lat={}, lon={}", latitude, longitude);
                 return ResponseEntity.badRequest().build();
             }
-            if (radiusKm <= 0 || radiusKm > 100) { // Max 100km radius
+
+            if (radiusKm <= 0 || radiusKm > 100) {
+                log.warn("Invalid radius provided: {}km", radiusKm);
                 return ResponseEntity.badRequest().build();
             }
 
-            log.info("Fetching delayed trips within {}km of coordinates ({}, {})", radiusKm, latitude, longitude);
+            // Get all current states (positions + delays) and filter by radius
+            List<VehicleCurrentState> nearbyStates = gtfsRealTimeService.filterVehiclesByRadius(
+                gtfsRealTimeService.fetchVehicleCurrentState(), latitude, longitude, radiusKm);
 
-            // Get all trip updates and vehicle positions
-            List<SimpleTripUpdate> allTripUpdates = gtfsRealTimeService.fetchTripUpdates();
-            List<SimpleVehiclePosition> allPositions = gtfsRealTimeService.fetchVehiclePositions();
+            // Convert to SimpleTripUpdate format
+            List<SimpleTripUpdate> nearbyDelays = nearbyStates.stream()
+                .map(state -> new SimpleTripUpdate(
+                    state.tripId(),
+                    state.routeId(),
+                    state.vehicleId(),
+                    state.delay(),
+                    state.scheduleRelationship()
+                ))
+                .collect(Collectors.toList());
 
-            // Filter for significantly delayed trips and match with nearby vehicle positions
-            List<SimpleTripUpdate> nearbyDelayedTrips = allTripUpdates.stream()
-                    .filter(SimpleTripUpdate::isSignificantlyDelayed)
-                    .filter(tripUpdate -> {
-                        // Find corresponding vehicle position for this trip
-                        return allPositions.stream()
-                                .filter(position -> tripUpdate.tripId().equals(position.tripId()) ||
-                                                  (tripUpdate.vehicleId() != null && tripUpdate.vehicleId().equals(position.vehicleId())))
-                                .anyMatch(position -> calculateDistance(latitude, longitude, position.latitude(), position.longitude()) <= radiusKm);
-                    })
-                    .collect(Collectors.toList());
-
-            log.info("Found {} nearby delayed trips within {}km radius", nearbyDelayedTrips.size(), radiusKm);
-            return ResponseEntity.ok(nearbyDelayedTrips);
+            log.info("Found {} nearby trip delays within {}km radius", nearbyDelays.size(), radiusKm);
+            return ResponseEntity.ok(nearbyDelays);
 
         } catch (IOException e) {
-            log.error("Failed to fetch nearby delayed trips due to I/O error", e);
+            log.error("Failed to fetch nearby trip delays due to I/O error", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 
         } catch (Exception e) {
-            log.error("Unexpected error while fetching nearby delayed trips", e);
+            log.error("Unexpected error while fetching nearby trip delays", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Calculates the distance between two geographic coordinates using the Haversine formula.
-     *
-     * @param lat1 Latitude of first point
-     * @param lon1 Longitude of first point
-     * @param lat2 Latitude of second point
-     * @param lon2 Longitude of second point
-     * @return Distance in kilometers
+     * Helper method to calculate distance between two GPS coordinates using Haversine formula.
      */
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         final int EARTH_RADIUS_KM = 6371;
