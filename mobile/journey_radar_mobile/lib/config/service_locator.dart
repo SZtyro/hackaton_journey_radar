@@ -11,6 +11,7 @@ import 'package:get_it/get_it.dart';
 import 'package:journey_radar_mobile/api/api.dart';
 import 'package:journey_radar_mobile/config/constants.dart';
 import 'package:journey_radar_mobile/config/error_interceptor.dart';
+import 'package:journey_radar_mobile/config/firebase_push_notifications_service.dart';
 import 'package:journey_radar_mobile/config/language_provider.dart';
 import 'package:journey_radar_mobile/repository/repository.dart';
 import 'package:journey_radar_mobile/repository/repository_impl.dart';
@@ -115,6 +116,9 @@ Future<void> setUpServiceLocator() async {
   await flutterTts.setVolume(1);
   await flutterTts.awaitSpeakCompletion(true);
   getIt.registerSingleton<FlutterTts>(flutterTts);
+  getIt.registerLazySingleton<FirebasePushNotificationService>(
+    FirebasePushNotificationService.new,
+  );
   // getIt.registerLazySingleton<FirebasePushNotificationService>(
   //   FirebasePushNotificationService.new,
   // );

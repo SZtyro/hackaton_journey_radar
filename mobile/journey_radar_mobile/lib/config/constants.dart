@@ -24,6 +24,13 @@ abstract class AppConstants {
   static const Color defaultSeed = Color(0xFF6750A4);
   static const baseUrl = 'https://api.journeyradar.com';
   static const appName = 'Journey Radar';
+  static const androidPushNotificationsChannelId =
+      'journey_radar_mobile_channel_id';
+  static const androidPushNotificationsChannelName =
+      'Journey Radar Mobile Channel';
+  static const androidPushNotificationsChannelDescription =
+      'Journey Radar Mobile Channel Description';
+  static const nativeAndroidDefaultIconPath = '@mipmap/ic_launcher';
 }
 
 abstract class DioNetworkConstants {
