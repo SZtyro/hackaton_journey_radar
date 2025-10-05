@@ -1,16 +1,14 @@
 package pl.drunkcom.core.model.gtfs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.drunkcom.core.model.Raport;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a GTFS route from the routes.txt file.
@@ -60,4 +58,24 @@ public class Route {
 
     @Column(name = "continuous_drop_off")
     private Integer continuousDropOff;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Raport> raports = new ArrayList<>();
+
+    // helper methods to maintain bidirectional relationship with reports
+    public void addRaport(Raport raport) {
+        if (raport == null) return;
+        if (!this.raports.contains(raport)) {
+            this.raports.add(raport);
+            raport.setRoute(this);
+        }
+    }
+
+    public void removeRaport(Raport raport) {
+        if (raport == null) return;
+        if (this.raports.remove(raport)) {
+            raport.setRoute(null);
+        }
+    }
 }

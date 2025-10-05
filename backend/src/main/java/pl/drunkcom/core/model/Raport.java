@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -33,6 +35,7 @@ public class Raport extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "route_id", referencedColumnName = "route_id")
+    @JsonIgnore
     private Route route;
 
     @Column(name = "is_emergency")
@@ -46,4 +49,16 @@ public class Raport extends BaseEntity {
 
     @Column(name = "longitude")
     private Double longitude;
+
+    // Helper methods for JSON serialization
+    @JsonProperty("routeId")
+    public String getRouteId() {
+        return route != null ? route.getRouteId() : null;
+    }
+
+    @JsonProperty("routeId")
+    public void setRouteId(String routeId) {
+        // This will be handled by the service layer
+        // The route object will be set there based on routeId
+    }
 }
