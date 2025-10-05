@@ -1,3 +1,4 @@
+// language: java
 package pl.drunkcom.core.model.gtfs;
 
 import lombok.Getter;
@@ -14,8 +15,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Represents GTFS stop_times (from stop_times.txt):
- * According to GTFS specification: https://gtfs.org/documentation/schedule/reference/#stop_timestxt
+ * Dostosowana encja StopTime do nagłówka CSV:
+ * trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled,timepoint
  */
 @Entity
 @Table(name = "gtfs_stop_times")
@@ -32,9 +33,6 @@ public class StopTime {
     @JoinColumn(name = "trip_id", referencedColumnName = "trip_id", nullable = false)
     private Trips trips;
 
-    @Column(name = "stop_sequence")
-    private Integer stopSequence;
-
     @Column(name = "arrival_time")
     private String arrivalTime; // format HH:MM:SS
 
@@ -45,6 +43,9 @@ public class StopTime {
     @JoinColumn(name = "stop_id", referencedColumnName = "stop_id", nullable = false)
     private Stop stop;
 
+    @Column(name = "stop_sequence")
+    private Integer stopSequence;
+
     @Column(name = "stop_headsign")
     private String stopHeadsign;
 
@@ -53,12 +54,6 @@ public class StopTime {
 
     @Column(name = "drop_off_type")
     private Integer dropOffType;
-
-    @Column(name = "continuous_pickup")
-    private Integer continuousPickup;
-
-    @Column(name = "continuous_drop_off")
-    private Integer continuousDropOff;
 
     @Column(name = "shape_dist_traveled")
     private Double shapeDistTraveled;
