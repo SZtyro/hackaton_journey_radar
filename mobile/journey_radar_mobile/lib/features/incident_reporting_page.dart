@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:journey_radar_mobile/app_ui/app_scaffold.dart';
 import 'package:journey_radar_mobile/app_ui/app_spacing.dart';
@@ -6,6 +7,10 @@ import 'package:journey_radar_mobile/app_ui/font_constants.dart';
 import 'package:journey_radar_mobile/config/firebase_push_notifications_service.dart';
 import 'package:journey_radar_mobile/config/logger.dart';
 import 'package:journey_radar_mobile/config/service_locator.dart';
+import 'package:journey_radar_mobile/entity/entity.dart';
+import 'package:journey_radar_mobile/features/incident_reporting/cubit/incident_reporting_cubit.dart';
+import 'package:journey_radar_mobile/repository/repository.dart';
+import 'package:journey_radar_mobile/shared/state_status.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -55,14 +60,30 @@ enum IncidentType {
   }
 }
 
-class IncidentReportingPage extends StatefulWidget {
+class IncidentReportingPage extends StatelessWidget {
   const IncidentReportingPage({super.key});
 
   @override
-  State<IncidentReportingPage> createState() => _IncidentReportingPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => IncidentReportingCubit(
+        repository: getIt<Repository>(),
+      )..initialCubitLoad(),
+      child: const _IncidentReportingPageContent(),
+    );
+  }
 }
 
-class _IncidentReportingPageState extends State<IncidentReportingPage> {
+class _IncidentReportingPageContent extends StatefulWidget {
+  const _IncidentReportingPageContent();
+
+  @override
+  State<_IncidentReportingPageContent> createState() =>
+      _IncidentReportingPageContentState();
+}
+
+class _IncidentReportingPageContentState
+    extends State<_IncidentReportingPageContent> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
@@ -72,11 +93,10 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
 
   // Keys for scroll targets
   final GlobalKey _routeCardKey = GlobalKey();
-  final GlobalKey _stationCardKey = GlobalKey();
   final GlobalKey _locationCardKey = GlobalKey();
 
   IncidentType? _selectedIncidentType;
-  String? _selectedRoute;
+  GtfsRouteEntity? _selectedRoute;
   bool _isEmergency = false;
   bool _isSubmitting = false;
 
@@ -87,15 +107,6 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   String? _locationError;
   bool _hasAutoFetchedLocation =
       false; // Flag to track if we've auto-fetched location
-
-  // Mock data for routes and stations
-  final List<String> _routes = [
-    'Linia 1 - Bronowice ↔ Nowy Bieżanów',
-    'Linia 2 - Czerwone Maki ↔ Mistrzejowice',
-    'Linia 3 - Mistrzejowice ↔ Kurdwanów',
-    'Linia 4 - Wzgórza Krzesławickie ↔ Bronowice',
-    'Linia 5 - Krowodrza Górka ↔ Nowy Bieżanów',
-  ];
 
   @override
   void initState() {
@@ -163,7 +174,10 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
         'location': _incidentLocation != null
             ? 'GPS: ${_incidentLocation!.latitude.toStringAsFixed(6)}, ${_incidentLocation!.longitude.toStringAsFixed(6)}'
             : _locationController.text,
-        'route': _selectedRoute,
+        'route': _selectedRoute != null
+            ? '${_selectedRoute!.routeShortName ?? _selectedRoute!.routeId} - ${_selectedRoute!.routeLongName ?? ""}'
+            : null,
+        'routeId': _selectedRoute?.routeId,
         'isEmergency': _isEmergency,
         'timestamp': DateTime.now().toIso8601String(),
         'reporterId': 'user_123', // Mock user ID
@@ -222,8 +236,11 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
   Future<void> _sendIncidentNotification(
       Map<String, dynamic> incidentData) async {
     try {
-      // Generate a route ID from the selected route
-      final routeId = _generateRouteId(incidentData['route']);
+      final routeId = incidentData['routeId'] as String?;
+      if (routeId == null) {
+        logD('No route selected, skipping notification');
+        return;
+      }
 
       await firebaseApi.sendIncidentNotification(
         routeId: routeId,
@@ -244,15 +261,6 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
       logE('Error sending incident notification: $e');
       // Don't rethrow here to avoid breaking the form submission
     }
-  }
-
-  String _generateRouteId(String route) {
-    // Convert route name to a simple ID for topic subscription
-    return route
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]'), '_')
-        .replaceAll(RegExp(r'_+'), '_')
-        .replaceAll(RegExp(r'^_|_$'), '');
   }
 
   Future<void> _getCurrentLocation() async {
@@ -534,27 +542,71 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
                           ),
                         ),
                         SizedBox(height: AppSpacing.xs),
-                        DropdownButtonFormField<String>(
-                          value: _selectedRoute,
-                          decoration: const InputDecoration(
-                            hintText: 'Wybierz trasę',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: _routes
-                              .map((route) => DropdownMenuItem(
-                                    value: route,
-                                    child: Text(route),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedRoute = value;
-                            });
-                            // Auto-scroll to station card after a short delay
-                            Future.delayed(const Duration(milliseconds: 100),
-                                () {
-                              _scrollToWidget(_stationCardKey);
-                            });
+                        BlocBuilder<IncidentReportingCubit,
+                            IncidentReportingState>(
+                          builder: (context, state) {
+                            final isLoading = state.getGtfsRoutesStatus ==
+                                StateStatus.loading;
+                            final routes = state.gtfsRoutes ?? [];
+
+                            if (isLoading) {
+                              return Container(
+                                padding: EdgeInsets.all(AppSpacing.m),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    ),
+                                    SizedBox(width: AppSpacing.m),
+                                    Text('Ładowanie tras...'),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            if (routes.isEmpty) {
+                              return Container(
+                                padding: EdgeInsets.all(AppSpacing.m),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text('Brak dostępnych tras'),
+                              );
+                            }
+
+                            return DropdownButtonFormField<GtfsRouteEntity>(
+                              value: _selectedRoute,
+                              decoration: const InputDecoration(
+                                hintText: 'Wybierz trasę',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: routes
+                                  .map((route) => DropdownMenuItem(
+                                        value: route,
+                                        child: Text(
+                                          '${route.routeShortName ?? route.routeId} - ${route.routeLongName ?? ""}',
+                                        ),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedRoute = value;
+                                });
+                                // Auto-scroll to station card after a short delay
+                                Future.delayed(
+                                    const Duration(milliseconds: 100), () {
+                                  _scrollToWidget(_locationCardKey);
+                                });
+                              },
+                            );
                           },
                         ),
                       ],
