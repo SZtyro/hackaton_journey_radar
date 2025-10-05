@@ -3,5 +3,14 @@
   "noInternet": "Brak połączenia z internetem",
   "unexpectedError": "Nieoczekiwany błąd",
   "failedConnectionWithServer": "Nie udało się połączyć z serwerem",
-  "serverError": "Błąd serwera"
+  "serverError": "Błąd serwera",
+  "myLocation": "Moja lokalizacja",
+  "refresh": "Odśwież",
+  "loading": "Ładowanie",
+  "alignNorth": "Wyrównaj na północ",
+  "zoomIn": "Przybliż",
+  "zoomOut": "Oddal",
+  "coordinates": "Współrzędne",
+  "createdAt": "Utworzono",
+  "close": "Zamknij"
 }

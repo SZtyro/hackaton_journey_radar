@@ -23,7 +23,7 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    const MapPageWithApi(),
+    const MapPage(),
     const SchedulePage(),
     const IncidentReportingPage(),
     const SettingsPage(),
