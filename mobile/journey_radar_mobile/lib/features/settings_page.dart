@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:journey_radar_mobile/app_ui/app_scaffold.dart';
 import 'package:journey_radar_mobile/app_ui/app_spacing.dart';
-import 'package:journey_radar_mobile/app_ui/components/components.dart';
 import 'package:journey_radar_mobile/app_ui/font_constants.dart';
 import 'package:journey_radar_mobile/config/service_locator.dart';
 import 'package:journey_radar_mobile/theme/theme_cubit.dart';

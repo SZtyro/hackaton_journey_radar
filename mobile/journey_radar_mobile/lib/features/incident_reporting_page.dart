@@ -97,19 +97,6 @@ class _IncidentReportingPageState extends State<IncidentReportingPage> {
     'Linia 5 - Krowodrza Górka ↔ Nowy Bieżanów',
   ];
 
-  final List<String> _stations = [
-    'Bronowice',
-    'Czerwone Maki',
-    'Mistrzejowice',
-    'Kurdwanów',
-    'Wzgórza Krzesławickie',
-    'Krowodrza Górka',
-    'Nowy Bieżanów',
-    'Plac Centralny',
-    'Dworzec Główny',
-    'Rondo Mogilskie',
-  ];
-
   @override
   void initState() {
     super.initState();
