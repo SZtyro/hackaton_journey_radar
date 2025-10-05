@@ -37,21 +37,20 @@ public record SimpleTripUpdate(String tripId, String routeId, String vehicleId, 
     }
 
     /**
-     * Returns a human-readable delay description.
+     * Returns a human-readable delay description rounded to full minutes.
+     * Shows "On time" for delays under 30 seconds, otherwise rounds to nearest minute.
      *
-     * @return delay description in minutes and seconds
+     * @return delay description in minutes only
      */
     public String getDelayDescription() {
-        if (delay == 0) {
+        int delayInMinutes = getDelayInMinutes();
+
+        if (delayInMinutes == 0) {
             return "On time";
-        } else if (delay > 0) {
-            int minutes = delay / 60;
-            int seconds = delay % 60;
-            return String.format("%d min %d sec late", minutes, seconds);
+        } else if (delayInMinutes > 0) {
+            return delayInMinutes + " min delayed";
         } else {
-            int minutes = Math.abs(delay) / 60;
-            int seconds = Math.abs(delay) % 60;
-            return String.format("%d min %d sec early", minutes, seconds);
+            return Math.abs(delayInMinutes) + " min early";
         }
     }
 
@@ -61,15 +60,20 @@ public record SimpleTripUpdate(String tripId, String routeId, String vehicleId, 
      * @return true if delay is greater than 5 minutes
      */
     public boolean isSignificantlyDelayed() {
-        return delay > 300; // 5 minutes in seconds
+        return getDelayInMinutes() > 5;
     }
 
     /**
-     * Gets delay in minutes (rounded).
+     * Gets delay in minutes (rounded to nearest minute).
+     * Delays under 30 seconds are considered "on time" (0 minutes).
      *
      * @return delay in minutes
      */
     public int getDelayInMinutes() {
+        // Round to nearest minute, but treat delays under 30 seconds as "on time"
+        if (Math.abs(delay) < 30) {
+            return 0;
+        }
         return Math.round(delay / 60.0f);
     }
 }
