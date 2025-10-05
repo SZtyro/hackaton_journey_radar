@@ -27,6 +27,13 @@ class _SchedulePageState extends State<SchedulePage> {
   String? _selectedStop;
   RouteType? _selectedRouteType;
 
+  final ScrollController _scrollController = ScrollController();
+
+  // Keys for scroll targets
+  final GlobalKey _routeCardKey = GlobalKey();
+  final GlobalKey _stopCardKey = GlobalKey();
+  final GlobalKey _scheduleCardKey = GlobalKey();
+
   final List<Map<String, dynamic>> _routes = [
     {
       'id': '1',
@@ -99,6 +106,33 @@ class _SchedulePageState extends State<SchedulePage> {
   ];
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToWidget(GlobalKey key) {
+    if (key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        alignment: 0.1, // Scroll to show the widget near the top
+      );
+    }
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
@@ -106,6 +140,7 @@ class _SchedulePageState extends State<SchedulePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         padding: EdgeInsets.all(AppSpacing.m),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,6 +202,11 @@ class _SchedulePageState extends State<SchedulePage> {
                                   null; // Reset route when type changes
                               _selectedStop =
                                   null; // Reset stop when type changes
+                            });
+                            // Auto-scroll to route card after a short delay
+                            Future.delayed(const Duration(milliseconds: 100),
+                                () {
+                              _scrollToWidget(_routeCardKey);
                             });
                           },
                           child: Container(
@@ -234,6 +274,7 @@ class _SchedulePageState extends State<SchedulePage> {
             // Route selection - only show if route type is selected
             if (_selectedRouteType != null) ...[
               Card(
+                key: _routeCardKey,
                 child: Padding(
                   padding: EdgeInsets.all(AppSpacing.m),
                   child: Column(
@@ -274,6 +315,11 @@ class _SchedulePageState extends State<SchedulePage> {
                                 _selectedRoute = route['id'];
                                 _selectedStop =
                                     null; // Reset stop when route changes
+                              });
+                              // Auto-scroll to stop card after a short delay
+                              Future.delayed(const Duration(milliseconds: 100),
+                                  () {
+                                _scrollToWidget(_stopCardKey);
                               });
                             },
                             child: Container(
@@ -362,6 +408,7 @@ class _SchedulePageState extends State<SchedulePage> {
               // Stop selection - only show if route is selected
               if (_selectedRoute != null) ...[
                 Card(
+                  key: _stopCardKey,
                   child: Padding(
                     padding: EdgeInsets.all(AppSpacing.m),
                     child: Column(
@@ -394,6 +441,11 @@ class _SchedulePageState extends State<SchedulePage> {
                               onTap: () {
                                 setState(() {
                                   _selectedStop = stop['id'];
+                                });
+                                // Auto-scroll to schedule card after a short delay
+                                Future.delayed(
+                                    const Duration(milliseconds: 100), () {
+                                  _scrollToWidget(_scheduleCardKey);
                                 });
                               },
                               child: Container(
@@ -463,34 +515,51 @@ class _SchedulePageState extends State<SchedulePage> {
 
                 // Schedule results
                 if (_selectedStop != null) ...[
-                  Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(AppSpacing.m),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.schedule,
-                                color: Theme.of(context).colorScheme.primary,
-                                size: 24,
-                              ),
-                              SizedBox(width: AppSpacing.ms),
-                              Text(
-                                'Najbliższe odjazdy',
-                                style: TextStyle(
-                                  fontSize: FontConstants.fontSizeM,
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
+                  GestureDetector(
+                    onTap: () {
+                      // Scroll to bottom of the page
+                      Future.delayed(const Duration(milliseconds: 100), () {
+                        _scrollToBottom();
+                      });
+                    },
+                    child: Card(
+                      key: _scheduleCardKey,
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSpacing.m),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.schedule,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 24,
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: AppSpacing.m),
-                          _buildScheduleList(),
-                        ],
+                                SizedBox(width: AppSpacing.ms),
+                                Text(
+                                  'Najbliższe odjazdy',
+                                  style: TextStyle(
+                                    fontSize: FontConstants.fontSizeM,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                                Spacer(),
+                                Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  size: 20,
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: AppSpacing.m),
+                            _buildScheduleList(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
